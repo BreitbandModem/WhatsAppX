@@ -12,6 +12,9 @@ Features:
 Support and further information:
 http://forum.xda-developers.com/xposed/modules/mod-whatsappx-features-whatsapp-t2973749
 
+Download:
+http://repo.xposed.info/module/de.bidlingmeyer.xposed.whatsappx
+
 Requirements:
  - Rooted Android Version 4.1+
  - XposedFramework --> http://forum.xda-developers.com/xposed/xposed-installer-versions-changelog-t2714053
