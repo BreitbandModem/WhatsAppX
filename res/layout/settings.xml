@@ -20,76 +20,100 @@
         android:paddingBottom="10dp"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <GridLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:columnCount="4"
-            android:orientation="horizontal"
-            android:rowCount="2" >
+            android:orientation="horizontal" >
 
-            <ImageView
-                android:id="@+id/imageView1"
+            <GridLayout
+                android:id="@+id/gridLayout"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_column="0"
-                android:layout_row="0"
-                android:paddingRight="15dp"
-                android:src="@drawable/ic_settings" />
+                android:columnCount="4"
+                android:orientation="horizontal"
+                android:rowCount="2" >
 
-            <ImageView
-                android:id="@+id/imageView2"
+                <ImageView
+                    android:id="@+id/imageViewGear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="0"
+                    android:layout_row="0"
+                    android:src="@drawable/ic_settings" />
+
+                <ImageView
+                    android:id="@+id/imageViewLock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="1"
+                    android:layout_row="0"
+                    android:src="@drawable/ic_locked" />
+
+                <ImageView
+                    android:id="@+id/imageViewReminder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="2"
+                    android:layout_row="0"
+                    android:src="@drawable/ic_reminder" />
+
+                <ImageView
+                    android:id="@+id/imageViewStar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="3"
+                    android:layout_row="0"
+                    android:src="@drawable/ic_star_white" />
+
+                <CheckBox
+                    android:id="@+id/switchGear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="0"
+                    android:layout_row="1"
+                    android:paddingRight="15dp" />
+
+                <CheckBox
+                    android:id="@+id/switchLock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="1"
+                    android:layout_row="1"
+                    android:paddingRight="15dp" />
+
+                <CheckBox
+                    android:id="@+id/switchReminder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="2"
+                    android:layout_row="1"
+                    android:paddingRight="15dp" />
+
+                <CheckBox
+                    android:id="@+id/switchStar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="3"
+                    android:layout_row="1" />
+            </GridLayout>
+
+            <Button
+                android:id="@+id/buttonColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:layout_row="0"
-                android:paddingRight="15dp"
-                android:src="@drawable/ic_locked" />
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:text="Color" />
 
-            <ImageView
-                android:id="@+id/imageView3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="2"
-                android:layout_row="0"
-                android:paddingRight="15dp"
-                android:src="@drawable/ic_reminder" />
+        </RelativeLayout>
 
-            <ImageView
-                android:id="@+id/imageView4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="3"
-                android:layout_row="0"
-                android:src="@drawable/ic_star_white" />
-
-            <CheckBox
-                android:id="@+id/switchGear"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="0"
-                android:layout_row="1" />
-
-            <CheckBox
-                android:id="@+id/switchLock"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:layout_row="1" />
-
-            <CheckBox
-                android:id="@+id/switchReminder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="2"
-                android:layout_row="1" />
-
-            <CheckBox
-                android:id="@+id/switchStar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="3"
-                android:layout_row="1" />
-        </GridLayout>
+        <SeekBar
+            android:id="@+id/seekBar1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="23" />
         
         <View
             android:layout_width="fill_parent"

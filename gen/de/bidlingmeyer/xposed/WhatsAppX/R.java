@@ -18,51 +18,63 @@ public final class R {
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int alp_42447968_button_bar_button_style=0x7f010007;
+        public static final int alp_42447968_button_bar_button_style=0x7f010008;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int alp_42447968_button_bar_style=0x7f010006;
+        public static final int alp_42447968_button_bar_style=0x7f010007;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int alp_42447968_color_pattern_path=0x7f010000;
+        public static final int alp_42447968_color_pattern_path=0x7f010001;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int alp_42447968_drawable_btn_code_lock_default_holo=0x7f010001;
+        public static final int alp_42447968_drawable_btn_code_lock_default_holo=0x7f010002;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int alp_42447968_drawable_btn_code_lock_touched_holo=0x7f010002;
+        public static final int alp_42447968_drawable_btn_code_lock_touched_holo=0x7f010003;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int alp_42447968_drawable_indicator_code_lock_point_area_default_holo=0x7f010003;
+        public static final int alp_42447968_drawable_indicator_code_lock_point_area_default_holo=0x7f010004;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int alp_42447968_ic_action_lockpattern=0x7f010004;
+        public static final int alp_42447968_ic_action_lockpattern=0x7f010005;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int alp_42447968_theme_dialog=0x7f010008;
+        public static final int alp_42447968_theme_dialog=0x7f010009;
         /** <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
-        public static final int aosp_drawable_indicator_code_lock_point_area_normal=0x7f010005;
+        public static final int aosp_drawable_indicator_code_lock_point_area_normal=0x7f010006;
+        /** <p>Must be a boolean value, either "<code>true</code>" or "<code>false</code>".
+<p>This may also be a reference to a resource (in the form
+"<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
+theme attribute (in the form
+"<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
+containing a value of this type.
+         */
+        public static final int supportsAlpha=0x7f010000;
     }
     public static final class bool {
         public static final int alp_42447968_pkey_display_stealth_mode_default=0x7f080001;
         public static final int alp_42447968_pkey_sys_auto_save_pattern_default=0x7f080000;
     }
     public static final class color {
-        public static final int alp_42447968_pattern_path_dark=0x7f050001;
-        public static final int alp_42447968_pattern_path_light=0x7f050000;
+        public static final int alp_42447968_pattern_path_dark=0x7f060001;
+        public static final int alp_42447968_pattern_path_light=0x7f060000;
     }
     public static final class dimen {
-        public static final int alp_42447968_lockpatternview_size=0x7f060000;
-        public static final int alp_42447968_separator_size=0x7f060001;
+        public static final int alp_42447968_lockpatternview_size=0x7f050004;
+        public static final int alp_42447968_separator_size=0x7f050005;
+        public static final int ambilwarna_hsvHeight=0x7f050000;
+        public static final int ambilwarna_hsvWidth=0x7f050001;
+        public static final int ambilwarna_hueWidth=0x7f050002;
+        public static final int ambilwarna_spacer=0x7f050003;
     }
     public static final class drawable {
         public static final int ab_background_textured_whatsapp=0x7f020000;
@@ -80,98 +92,121 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int alp_42447968_ic_action_lockpattern_light=0x7f02000c;
         public static final int alp_42447968_indicator_code_lock_point_area_default_holo_dark=0x7f02000d;
         public static final int alp_42447968_indicator_code_lock_point_area_default_holo_light=0x7f02000e;
-        public static final int aosp_background_holo_dark=0x7f02000f;
-        public static final int aosp_background_holo_light=0x7f020010;
-        public static final int aosp_dialog_full_holo_dark=0x7f020011;
-        public static final int aosp_dialog_full_holo_light=0x7f020012;
-        public static final int aosp_indicator_code_lock_drag_direction_green_up=0x7f020013;
-        public static final int aosp_indicator_code_lock_drag_direction_red_up=0x7f020014;
-        public static final int aosp_indicator_code_lock_point_area_blue_holo=0x7f020015;
-        public static final int aosp_indicator_code_lock_point_area_green_holo=0x7f020016;
-        public static final int aosp_indicator_code_lock_point_area_red_holo=0x7f020017;
-        public static final int balloon_left=0x7f020018;
-        public static final int balloon_right=0x7f020019;
-        public static final int btn_cab_done_default_whatsapp=0x7f02001a;
-        public static final int btn_cab_done_focused_whatsapp=0x7f02001b;
-        public static final int btn_cab_done_pressed_whatsapp=0x7f02001c;
-        public static final int btn_cab_done_whatsapp=0x7f02001d;
-        public static final int cab_background_bottom_whatsapp=0x7f02001e;
-        public static final int cab_background_top_whatsapp=0x7f02001f;
-        public static final int default_wallpaper=0x7f020020;
-        public static final int ic_action_discard=0x7f020021;
-        public static final int ic_launcher=0x7f020022;
-        public static final int ic_launcher_grey=0x7f020023;
-        public static final int ic_locked=0x7f020024;
-        public static final int ic_reminder=0x7f020025;
-        public static final int ic_reminder_notification=0x7f020026;
-        public static final int ic_send_disabled_holo_light=0x7f020027;
-        public static final int ic_settings=0x7f020028;
-        public static final int ic_star=0x7f020029;
-        public static final int ic_star_white=0x7f02002a;
-        public static final int ic_unlocked=0x7f02002b;
-        public static final int list_focused_whatsapp=0x7f02002c;
-        public static final int list_pressed_whatsapp=0x7f02002d;
-        public static final int menu_dropdown_panel_whatsapp=0x7f02002e;
-        public static final int progress_bg_whatsapp=0x7f02002f;
-        public static final int progress_horizontal_whatsapp=0x7f020030;
-        public static final int progress_primary_whatsapp=0x7f020031;
-        public static final int progress_secondary_whatsapp=0x7f020032;
-        public static final int selectable_background_whatsapp=0x7f020033;
-        public static final int spinner_ab_default_whatsapp=0x7f020034;
-        public static final int spinner_ab_disabled_whatsapp=0x7f020035;
-        public static final int spinner_ab_focused_whatsapp=0x7f020036;
-        public static final int spinner_ab_pressed_whatsapp=0x7f020037;
-        public static final int spinner_background_ab_whatsapp=0x7f020038;
-        public static final int tab_indicator_ab_whatsapp=0x7f020039;
-        public static final int tab_selected_focused_whatsapp=0x7f02003a;
-        public static final int tab_selected_pressed_whatsapp=0x7f02003b;
-        public static final int tab_selected_whatsapp=0x7f02003c;
-        public static final int tab_unselected_focused_whatsapp=0x7f02003d;
-        public static final int tab_unselected_pressed_whatsapp=0x7f02003e;
-        public static final int tab_unselected_whatsapp=0x7f02003f;
+        public static final int ambilwarna_alphacheckered=0x7f02000f;
+        public static final int ambilwarna_alphacheckered_tiled=0x7f020010;
+        public static final int ambilwarna_arrow_down=0x7f020011;
+        public static final int ambilwarna_arrow_right=0x7f020012;
+        public static final int ambilwarna_cursor=0x7f020013;
+        public static final int ambilwarna_hue=0x7f020014;
+        public static final int ambilwarna_target=0x7f020015;
+        public static final int aosp_background_holo_dark=0x7f020016;
+        public static final int aosp_background_holo_light=0x7f020017;
+        public static final int aosp_dialog_full_holo_dark=0x7f020018;
+        public static final int aosp_dialog_full_holo_light=0x7f020019;
+        public static final int aosp_indicator_code_lock_drag_direction_green_up=0x7f02001a;
+        public static final int aosp_indicator_code_lock_drag_direction_red_up=0x7f02001b;
+        public static final int aosp_indicator_code_lock_point_area_blue_holo=0x7f02001c;
+        public static final int aosp_indicator_code_lock_point_area_green_holo=0x7f02001d;
+        public static final int aosp_indicator_code_lock_point_area_red_holo=0x7f02001e;
+        public static final int balloon_left=0x7f02001f;
+        public static final int balloon_right=0x7f020020;
+        public static final int btn_cab_done_default_whatsapp=0x7f020021;
+        public static final int btn_cab_done_focused_whatsapp=0x7f020022;
+        public static final int btn_cab_done_pressed_whatsapp=0x7f020023;
+        public static final int btn_cab_done_whatsapp=0x7f020024;
+        public static final int cab_background_bottom_whatsapp=0x7f020025;
+        public static final int cab_background_top_whatsapp=0x7f020026;
+        public static final int default_wallpaper=0x7f020027;
+        public static final int ic_action_discard=0x7f020028;
+        public static final int ic_launcher=0x7f020029;
+        public static final int ic_launcher_grey=0x7f02002a;
+        public static final int ic_locked=0x7f02002b;
+        public static final int ic_reminder=0x7f02002c;
+        public static final int ic_reminder_notification=0x7f02002d;
+        public static final int ic_send_disabled_holo_light=0x7f02002e;
+        public static final int ic_settings=0x7f02002f;
+        public static final int ic_star=0x7f020030;
+        public static final int ic_star_white=0x7f020031;
+        public static final int ic_unlocked=0x7f020032;
+        public static final int list_focused_whatsapp=0x7f020033;
+        public static final int list_pressed_whatsapp=0x7f020034;
+        public static final int menu_dropdown_panel_whatsapp=0x7f020035;
+        public static final int progress_bg_whatsapp=0x7f020036;
+        public static final int progress_horizontal_whatsapp=0x7f020037;
+        public static final int progress_primary_whatsapp=0x7f020038;
+        public static final int progress_secondary_whatsapp=0x7f020039;
+        public static final int selectable_background_whatsapp=0x7f02003a;
+        public static final int spinner_ab_default_whatsapp=0x7f02003b;
+        public static final int spinner_ab_disabled_whatsapp=0x7f02003c;
+        public static final int spinner_ab_focused_whatsapp=0x7f02003d;
+        public static final int spinner_ab_pressed_whatsapp=0x7f02003e;
+        public static final int spinner_background_ab_whatsapp=0x7f02003f;
+        public static final int tab_indicator_ab_whatsapp=0x7f020040;
+        public static final int tab_selected_focused_whatsapp=0x7f020041;
+        public static final int tab_selected_pressed_whatsapp=0x7f020042;
+        public static final int tab_selected_whatsapp=0x7f020043;
+        public static final int tab_unselected_focused_whatsapp=0x7f020044;
+        public static final int tab_unselected_pressed_whatsapp=0x7f020045;
+        public static final int tab_unselected_whatsapp=0x7f020046;
     }
     public static final class id {
-        public static final int action_deleteAll=0x7f0d0024;
-        public static final int action_settings=0x7f0d0025;
+        public static final int action_deleteAll=0x7f0d0034;
+        public static final int action_settings=0x7f0d0035;
         public static final int alp_42447968_button_cancel=0x7f0d0004;
         public static final int alp_42447968_button_confirm=0x7f0d0005;
         public static final int alp_42447968_textview_info=0x7f0d0001;
         public static final int alp_42447968_view_lock_pattern=0x7f0d0003;
         public static final int alp_42447968_viewgroup_footer=0x7f0d0002;
-        public static final int button1=0x7f0d0017;
-        public static final int button2=0x7f0d0018;
-        public static final int button5=0x7f0d0019;
-        public static final int button6=0x7f0d001a;
-        public static final int button7=0x7f0d001b;
-        public static final int contact=0x7f0d001e;
-        public static final int copy=0x7f0d0026;
-        public static final int date=0x7f0d0020;
-        public static final int delete=0x7f0d0027;
-        public static final int imageView1=0x7f0d000a;
-        public static final int imageView2=0x7f0d000b;
-        public static final int imageView3=0x7f0d000c;
-        public static final int imageView4=0x7f0d000d;
-        public static final int iv_icon=0x7f0d0007;
-        public static final int listView1=0x7f0d0006;
+        public static final int ambilwarna_alphaCheckered=0x7f0d000a;
+        public static final int ambilwarna_alphaCursor=0x7f0d000d;
+        public static final int ambilwarna_cursor=0x7f0d000c;
+        public static final int ambilwarna_dialogView=0x7f0d0006;
+        public static final int ambilwarna_newColor=0x7f0d0011;
+        public static final int ambilwarna_oldColor=0x7f0d0010;
+        public static final int ambilwarna_overlay=0x7f0d000b;
+        public static final int ambilwarna_pref_widget_box=0x7f0d0012;
+        public static final int ambilwarna_state=0x7f0d000f;
+        public static final int ambilwarna_target=0x7f0d000e;
+        public static final int ambilwarna_viewContainer=0x7f0d0007;
+        public static final int ambilwarna_viewHue=0x7f0d0009;
+        public static final int ambilwarna_viewSatBri=0x7f0d0008;
+        public static final int button1=0x7f0d0027;
+        public static final int button2=0x7f0d0028;
+        public static final int button5=0x7f0d0029;
+        public static final int button6=0x7f0d002a;
+        public static final int button7=0x7f0d002b;
+        public static final int buttonColor=0x7f0d0020;
+        public static final int contact=0x7f0d002e;
+        public static final int copy=0x7f0d0036;
+        public static final int date=0x7f0d0030;
+        public static final int delete=0x7f0d0037;
+        public static final int gridLayout=0x7f0d0017;
+        public static final int imageViewGear=0x7f0d0018;
+        public static final int imageViewLock=0x7f0d0019;
+        public static final int imageViewReminder=0x7f0d001a;
+        public static final int imageViewStar=0x7f0d001b;
+        public static final int iv_icon=0x7f0d0014;
+        public static final int listView1=0x7f0d0013;
         public static final int listView2=0x7f0d0000;
-        public static final int outermost=0x7f0d001c;
-        public static final int pager=0x7f0d0023;
-        public static final int singleMessage=0x7f0d001f;
-        public static final int singleMessageContainer=0x7f0d001d;
-        public static final int statsText=0x7f0d0021;
-        public static final int switchClick=0x7f0d0016;
-        public static final int switchFavorites=0x7f0d0015;
-        public static final int switchGear=0x7f0d000e;
-        public static final int switchLock=0x7f0d000f;
-        public static final int switchReminder=0x7f0d0010;
-        public static final int switchSelfie=0x7f0d0012;
-        public static final int switchStar=0x7f0d0011;
-        public static final int tag=0x7f0d0028;
-        public static final int tag_input=0x7f0d0022;
-        public static final int textView1=0x7f0d0009;
-        public static final int textView2=0x7f0d0014;
-        public static final int textView3=0x7f0d0013;
-        public static final int tv_name=0x7f0d0008;
+        public static final int outermost=0x7f0d002c;
+        public static final int pager=0x7f0d0033;
+        public static final int seekBar1=0x7f0d0021;
+        public static final int singleMessage=0x7f0d002f;
+        public static final int singleMessageContainer=0x7f0d002d;
+        public static final int statsText=0x7f0d0031;
+        public static final int switchClick=0x7f0d0026;
+        public static final int switchFavorites=0x7f0d0025;
+        public static final int switchGear=0x7f0d001c;
+        public static final int switchLock=0x7f0d001d;
+        public static final int switchReminder=0x7f0d001e;
+        public static final int switchSelfie=0x7f0d0022;
+        public static final int switchStar=0x7f0d001f;
+        public static final int tag=0x7f0d0038;
+        public static final int tag_input=0x7f0d0032;
+        public static final int textView1=0x7f0d0016;
+        public static final int textView2=0x7f0d0024;
+        public static final int textView3=0x7f0d0023;
+        public static final int tv_name=0x7f0d0015;
     }
     public static final class integer {
         public static final int alp_42447968_pkey_display_captcha_wired_dots_default=0x7f090002;
@@ -183,14 +218,16 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int alp_42447968_lock_pattern_activity=0x7f030001;
         public static final int alp_42447968_lock_pattern_activity_land=0x7f030002;
         public static final int alp_42447968_lock_pattern_view=0x7f030003;
-        public static final int chat=0x7f030004;
-        public static final int crop_selector=0x7f030005;
-        public static final int pin_layout=0x7f030006;
-        public static final int settings=0x7f030007;
-        public static final int singlemessage=0x7f030008;
-        public static final int stats=0x7f030009;
-        public static final int tag_input=0x7f03000a;
-        public static final int viewpager=0x7f03000b;
+        public static final int ambilwarna_dialog=0x7f030004;
+        public static final int ambilwarna_pref_widget=0x7f030005;
+        public static final int chat=0x7f030006;
+        public static final int crop_selector=0x7f030007;
+        public static final int pin_layout=0x7f030008;
+        public static final int settings=0x7f030009;
+        public static final int singlemessage=0x7f03000a;
+        public static final int stats=0x7f03000b;
+        public static final int tag_input=0x7f03000c;
+        public static final int viewpager=0x7f03000d;
     }
     public static final class menu {
         public static final int pager_activity_actions=0x7f0c0000;
@@ -274,4 +311,33 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int alp_42447968_button_bar_button_style=0x7f0b0011;
         public static final int alp_42447968_button_bar_style=0x7f0b0010;
     }
+    public static final class styleable {
+        /** Attributes that can be used with a AmbilWarnaPreference.
+           <p>Includes the following attributes:</p>
+           <table>
+           <colgroup align="left" />
+           <colgroup align="left" />
+           <tr><th>Attribute</th><th>Description</th></tr>
+           <tr><td><code>{@link #AmbilWarnaPreference_supportsAlpha de.bidlingmeyer.xposed.WhatsAppX:supportsAlpha}</code></td><td></td></tr>
+           </table>
+           @see #AmbilWarnaPreference_supportsAlpha
+         */
+        public static final int[] AmbilWarnaPreference = {
+            0x7f010000
+        };
+        /**
+          <p>This symbol is the offset where the {@link de.bidlingmeyer.xposed.WhatsAppX.R.attr#supportsAlpha}
+          attribute's value can be found in the {@link #AmbilWarnaPreference} array.
+
+
+          <p>Must be a boolean value, either "<code>true</code>" or "<code>false</code>".
+<p>This may also be a reference to a resource (in the form
+"<code>@[<i>package</i>:]<i>type</i>:<i>name</i></code>") or
+theme attribute (in the form
+"<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>")
+containing a value of this type.
+          @attr name de.bidlingmeyer.xposed.WhatsAppX:supportsAlpha
+        */
+        public static final int AmbilWarnaPreference_supportsAlpha = 0;
+    };
 }

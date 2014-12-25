@@ -1,13 +1,19 @@
 package de.bidlingmeyer.xposed.WhatsAppX;
 
+import yuku.ambilwarna.AmbilWarnaDialog;
+import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.LightingColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -16,28 +22,32 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
+import android.widget.GridLayout;
+import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Switch;
 import android.widget.Toast;
 
-public class SettingsActivity extends Activity implements OnCheckedChangeListener, OnClickListener{
+public class SettingsActivity extends Activity implements OnCheckedChangeListener, OnClickListener, OnSeekBarChangeListener{
 	
 	boolean fromWhatsapp, cannot; 
 	//boolean prefFavSwitch, prefFavCheck, prefWallSwitch, prefLockSwitch, prefRemindSwitch, prefPreviewSwitch, prefManipSwitch, prefLockCheck, prefRemindCheck;
 	boolean prefGear, prefClick, prefLock, prefReminder, prefStar, prefSelfie, prefFavorites;
+	int prefSize, prefColor;
 	IntentFilter intentFilter;
 	Intent starterIntent;
 	Receiver rec;
 	String jid="";
 	SharedPreferences prefs;
 	SharedPreferences.Editor edit;
-	//Switch favSwitch, wallSwitch, lockSwitch, remindSwitch, previewSwitch, manipSwitch;
+	SeekBar seekBar;
 	Switch switchClick, switchSelfie, switchFavorites;
 	CheckBox switchGear, switchLock, switchReminder, switchStar;
-	//CheckBox favCheck, lockCheck, remindCheck;
-	Button favButton, wallButton, remindButton, previewButton, resetButton;
-	//LinearLayout favLayout, wallLayout, lockLayout, remindLayout, previewLayout, manipLayout;
+	ImageView imageGear, imageLock, imageReminder, imageStar;
+	Button favButton, wallButton, remindButton, previewButton, resetButton, colorButton;
+	ImageView images[];
+	GridLayout gridLayout;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +85,37 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         settings[4] = prefStar = prefs.getBoolean("star", false);
         settings[5] = prefSelfie = prefs.getBoolean("selfie", true);
         settings[6] = prefFavorites = prefs.getBoolean("favorites", true);
+        prefSize = prefs.getInt("size", 30);
+        prefColor = prefs.getInt("color", Color.WHITE);
+        
+        images = new ImageView[4];
+        
+        images[0] = imageGear = (ImageView) findViewById(R.id.imageViewGear);
+        images[1] = imageLock = (ImageView) findViewById(R.id.imageViewLock);
+        images[2] = imageReminder = (ImageView) findViewById(R.id.imageViewReminder);
+        images[3] = imageStar = (ImageView) findViewById(R.id.imageViewStar);
+        
+        int k = Helper.convertDp(this, 5);
+        int j = Helper.convertDp(this, 30);
+        boolean background = false;
+    	float[] hsv = new float[3];
+    	Color.colorToHSV(prefColor, hsv);
+    	if (hsv[2] < 0.2) {
+    		background = true;
+    	}
+        for(int i=0; i<images.length; i++){
+        	images[i].getLayoutParams().width = j;
+        	images[i].setPadding(k, 0, k, 0);
+        	images[i].getDrawable().setColorFilter(new LightingColorFilter( prefColor, prefColor ));
+        	if(background){
+        		images[i].setBackgroundColor(Color.WHITE);
+        	}else{
+        		images[i].setBackgroundColor(Color.TRANSPARENT);
+        	}
+        	images[i].invalidate();
+        }
+        
+        gridLayout = (GridLayout) findViewById(R.id.gridLayout);
         
         CompoundButton switches [] = new CompoundButton[7];
         
@@ -86,10 +127,14 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         switches[5] = switchSelfie = (Switch) findViewById(R.id.switchSelfie);
         switches[6] = switchFavorites = (Switch) findViewById(R.id.switchFavorites);
         
-        for(int i=0; i<7; i++){
+        for(int i=0; i<switches.length; i++){
         	switches[i].setChecked(settings[i]);
         	switches[i].setOnCheckedChangeListener(this);
         }
+        
+        seekBar = (SeekBar) findViewById(R.id.seekBar1);
+        seekBar.setOnSeekBarChangeListener(this);
+        seekBar.setProgress(prefSize-20);
         
         
         favButton = (Button) findViewById(R.id.button1);
@@ -97,11 +142,46 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         remindButton = (Button) findViewById(R.id.button5);
         previewButton = (Button) findViewById(R.id.button6);
         resetButton = (Button) findViewById(R.id.button7);
+        colorButton = (Button) findViewById(R.id.buttonColor);
         favButton.setOnClickListener(this);
         wallButton.setOnClickListener(this);
         remindButton.setOnClickListener(this);
         previewButton.setOnClickListener(this);
 	    resetButton.setOnClickListener(this);
+	    colorButton.setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				AmbilWarnaDialog dialog = new AmbilWarnaDialog(SettingsActivity.this, prefColor, new OnAmbilWarnaListener() {
+			        @Override
+			        public void onOk(AmbilWarnaDialog dialog, int color) {
+			            // color is the color selected by the user.
+			        	boolean background = false;
+			        	float[] hsv = new float[3];
+			        	Color.colorToHSV(color, hsv);
+			        	if (hsv[2] < 0.2) {
+			        		background = true;
+			        	}
+			        	for(int i=0; i<images.length; i++){
+			            	images[i].getDrawable().setColorFilter(new LightingColorFilter( color, color ));
+			            	if(background){
+			            		images[i].setBackgroundColor(Color.WHITE);
+			            	}else{
+			            		images[i].setBackgroundColor(Color.TRANSPARENT);
+			            	}
+			            	images[i].invalidate();
+			            }
+			        	prefColor = color;
+			        	edit.putInt("color", color);
+			        }
+			                
+			        @Override
+			        public void onCancel(AmbilWarnaDialog dialog) {
+			                // cancel was selected by the user
+			        }
+				});
+				dialog.show();
+			}
+	    });
 	}
 	
 	@Override
@@ -218,6 +298,18 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 		}
 	}
 	
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        int j = Helper.convertDp(this, progress+20);
+        for(int i=0; i<images.length; i++){
+        	GridLayout.LayoutParams params = (GridLayout.LayoutParams) images[i].getLayoutParams();
+        	params.width = j;
+        	images[i].setLayoutParams(params);	
+        }
+        prefSize = progress;
+        edit.putInt("size", progress+20);
+	}
+	
 	 @Override
 	    public void onBackPressed() {
 	    	if(!cannot && fromWhatsapp){
@@ -263,5 +355,13 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 	   		 cannot = true;
 	   	 }
 	   }
+
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {
+		}
+
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {			
+		}
 
 }

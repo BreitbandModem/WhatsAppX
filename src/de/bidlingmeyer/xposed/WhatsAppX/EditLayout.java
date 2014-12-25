@@ -17,7 +17,10 @@ import android.content.res.Resources;
 import android.content.res.XModuleResources;
 import android.content.res.XResForwarder;
 import android.graphics.Color;
+import android.graphics.LightingColorFilter;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Menu;
@@ -457,12 +460,24 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				prefs.makeWorldReadable();
 				
 				int i = Helper.convertDp(layout.getContext(), 5);
-				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(Helper.convertDp(layout.getContext(), 25), LayoutParams.MATCH_PARENT);
+				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(Helper.convertDp(layout.getContext(), prefs.getInt("size", 30)), LayoutParams.MATCH_PARENT);
+				int color = prefs.getInt("color", Color.WHITE);
 				XResForwarder x=null;
 				
 				if(prefs.getBoolean("gear", true)){
 				settingsButton = new ImageButton(layout.getContext());
 				settingsButton.setBackgroundColor(Color.TRANSPARENT);
+				settingsButton.setOnTouchListener(new OnTouchListener(){
+					@Override
+					public boolean onTouch(View v, MotionEvent event) {
+						if(event.getAction() == MotionEvent.ACTION_DOWN){
+							settingsButton.setBackgroundColor(Color.LTGRAY);
+						}else if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL){
+							settingsButton.setBackgroundColor(Color.TRANSPARENT);
+						}
+						return false;
+					}
+				});
 				settingsButton.setOnClickListener(new OnClickListener(){
 					@Override
 					public void onClick(View v) {
@@ -474,7 +489,9 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			    settingsButton.setPadding(i, 0, i, 0);
 			    settingsButton.setScaleType(ImageButton.ScaleType.CENTER_INSIDE);
 			    settingsButton.setAdjustViewBounds(true);
-			    settingsButton.setImageDrawable(x.getResources().getDrawable(x.getId()));
+			    Drawable d = x.getResources().getDrawable(x.getId());
+			    d.setColorFilter(new LightingColorFilter( color, color ));
+			    settingsButton.setImageDrawable(d);
 				layout.addView(settingsButton);
 				}
 				
@@ -482,7 +499,17 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				lockButton = new ImageButton(layout.getContext());
 				
 			    lockButton.setBackgroundColor(Color.TRANSPARENT);
-				
+			    lockButton.setOnTouchListener(new OnTouchListener(){
+					@Override
+					public boolean onTouch(View v, MotionEvent event) {
+						if(event.getAction() == MotionEvent.ACTION_DOWN){
+							lockButton.setBackgroundColor(Color.LTGRAY);
+						}else if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL){
+							lockButton.setBackgroundColor(Color.TRANSPARENT);
+						}
+						return false;
+					}
+				});
 			    lockButton.setOnClickListener(new OnClickListener(){
 					@Override
 					public void onClick(View view) {
@@ -516,14 +543,27 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			    lockButton.setScaleType(ImageButton.ScaleType.CENTER_INSIDE);
 			    lockButton.setAdjustViewBounds(true);
 			    x = modRes.fwd(R.drawable.ic_unlocked);
-			    lockButton.setImageDrawable(x.getResources().getDrawable(x.getId()));
+			    Drawable d = x.getResources().getDrawable(x.getId());
+			    d.setColorFilter(new LightingColorFilter( color, color ));
+			    lockButton.setImageDrawable(d);
 				layout.addView(lockButton);
 				}
 				
 				
 				if(prefs.getBoolean("reminder", true)){
-				ImageButton remindButton = new ImageButton(layout.getContext());
+				final ImageButton remindButton = new ImageButton(layout.getContext());
 				remindButton.setBackgroundColor(Color.TRANSPARENT);
+				remindButton.setOnTouchListener(new OnTouchListener(){
+					@Override
+					public boolean onTouch(View v, MotionEvent event) {
+						if(event.getAction() == MotionEvent.ACTION_DOWN){
+							remindButton.setBackgroundColor(Color.LTGRAY);
+						}else if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL){
+							remindButton.setBackgroundColor(Color.TRANSPARENT);
+						}
+						return false;
+					}
+				});
 				remindButton.setOnClickListener(new OnClickListener(){
 					@Override
 					public void onClick(View v) {
@@ -541,13 +581,26 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			    remindButton.setAdjustViewBounds(true);
 			    remindButton.setPadding(i, 0, i, 0);
 			    x = modRes.fwd(R.drawable.ic_reminder);
-			    remindButton.setImageDrawable(x.getResources().getDrawable(x.getId()));
+			    Drawable d = x.getResources().getDrawable(x.getId());
+			    d.setColorFilter(new LightingColorFilter( color, color ));
+			    remindButton.setImageDrawable(d);
 				layout.addView(remindButton);
 				}
 				
 				if(prefs.getBoolean("star", false)){
 					starButton = new ImageButton(layout.getContext());
 					starButton.setBackgroundColor(Color.TRANSPARENT);
+					starButton.setOnTouchListener(new OnTouchListener(){
+						@Override
+						public boolean onTouch(View v, MotionEvent event) {
+							if(event.getAction() == MotionEvent.ACTION_DOWN){
+								starButton.setBackgroundColor(Color.LTGRAY);
+							}else if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL){
+								starButton.setBackgroundColor(Color.TRANSPARENT);
+							}
+							return false;
+						}
+					});
 					starButton.setOnClickListener(new OnClickListener(){
 						@Override
 						public void onClick(View v) {
@@ -568,7 +621,9 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				    starButton.setPadding(i, 0, i, 0);
 				    starButton.setScaleType(ImageButton.ScaleType.CENTER_INSIDE);
 				    starButton.setAdjustViewBounds(true);
-				    starButton.setImageDrawable(x.getResources().getDrawable(x.getId()));
+				    Drawable d = x.getResources().getDrawable(x.getId());
+				    d.setColorFilter(new LightingColorFilter( color, color ));
+				    starButton.setImageDrawable(d);
 					layout.addView(starButton);
 				}
 			}
@@ -864,6 +919,9 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 						popup.getMenu().add(Menu.NONE, 1, Menu.NONE, "Lock Contact");
 					}
 				}
+				if(!prefs.getBoolean("star", false)){
+					popup.getMenu().add(Menu.NONE, 8, Menu.NONE, "Open WhatsAppX");
+				}
 					if(hasWallpaper){
 						popup.getMenu().add(Menu.NONE, 2, Menu.NONE, "Set/Delete Wallpaper");
 					}else{
@@ -1000,6 +1058,17 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			         	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.StatsActivity"));
 			         	intent.putExtra("conversationName", conversationName);
 			        	context.startActivity(intent);
+            	 }else if(item.getItemId()==8){
+            		 	Intent intent = new Intent();
+	 					intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX","de.bidlingmeyer.xposed.WhatsAppX.PagerActivity"));//startet die pager activity
+	 					intent.putExtra("conversationName", conversationName); 
+	 					intent.putExtra("whatsapp", true);
+	 					int i, k;
+	 					Resources res = context.getResources();
+	 					i = res.getIdentifier("slide_out_left", "anim", "de.bidlingmeyer.xposed.WhatsAppX");
+	 					k = res.getIdentifier("slide_in_right", "anim", "de.bidlingmeyer.xposed.WhatsAppX");
+	 					ActivityOptions opts = ActivityOptions.makeCustomAnimation(context, k, i);
+	 					context.startActivity(intent, opts.toBundle());	
             	 }
             	 
             	 return true;

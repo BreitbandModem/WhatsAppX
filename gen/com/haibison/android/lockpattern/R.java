@@ -8,27 +8,27 @@ package com.haibison.android.lockpattern;
 
 public final class R {
 	public static final class attr {
-		public static final int alp_42447968_button_bar_button_style = 0x7f010007;
-		public static final int alp_42447968_button_bar_style = 0x7f010006;
-		public static final int alp_42447968_color_pattern_path = 0x7f010000;
-		public static final int alp_42447968_drawable_btn_code_lock_default_holo = 0x7f010001;
-		public static final int alp_42447968_drawable_btn_code_lock_touched_holo = 0x7f010002;
-		public static final int alp_42447968_drawable_indicator_code_lock_point_area_default_holo = 0x7f010003;
-		public static final int alp_42447968_ic_action_lockpattern = 0x7f010004;
-		public static final int alp_42447968_theme_dialog = 0x7f010008;
-		public static final int aosp_drawable_indicator_code_lock_point_area_normal = 0x7f010005;
+		public static final int alp_42447968_button_bar_button_style = 0x7f010008;
+		public static final int alp_42447968_button_bar_style = 0x7f010007;
+		public static final int alp_42447968_color_pattern_path = 0x7f010001;
+		public static final int alp_42447968_drawable_btn_code_lock_default_holo = 0x7f010002;
+		public static final int alp_42447968_drawable_btn_code_lock_touched_holo = 0x7f010003;
+		public static final int alp_42447968_drawable_indicator_code_lock_point_area_default_holo = 0x7f010004;
+		public static final int alp_42447968_ic_action_lockpattern = 0x7f010005;
+		public static final int alp_42447968_theme_dialog = 0x7f010009;
+		public static final int aosp_drawable_indicator_code_lock_point_area_normal = 0x7f010006;
 	}
 	public static final class bool {
 		public static final int alp_42447968_pkey_display_stealth_mode_default = 0x7f080001;
 		public static final int alp_42447968_pkey_sys_auto_save_pattern_default = 0x7f080000;
 	}
 	public static final class color {
-		public static final int alp_42447968_pattern_path_dark = 0x7f050001;
-		public static final int alp_42447968_pattern_path_light = 0x7f050000;
+		public static final int alp_42447968_pattern_path_dark = 0x7f060001;
+		public static final int alp_42447968_pattern_path_light = 0x7f060000;
 	}
 	public static final class dimen {
-		public static final int alp_42447968_lockpatternview_size = 0x7f060000;
-		public static final int alp_42447968_separator_size = 0x7f060001;
+		public static final int alp_42447968_lockpatternview_size = 0x7f050004;
+		public static final int alp_42447968_separator_size = 0x7f050005;
 	}
 	public static final class drawable {
 		public static final int alp_42447968_btn_code_lock_default_holo_dark = 0x7f020007;
@@ -39,15 +39,15 @@ public final class R {
 		public static final int alp_42447968_ic_action_lockpattern_light = 0x7f02000c;
 		public static final int alp_42447968_indicator_code_lock_point_area_default_holo_dark = 0x7f02000d;
 		public static final int alp_42447968_indicator_code_lock_point_area_default_holo_light = 0x7f02000e;
-		public static final int aosp_background_holo_dark = 0x7f02000f;
-		public static final int aosp_background_holo_light = 0x7f020010;
-		public static final int aosp_dialog_full_holo_dark = 0x7f020011;
-		public static final int aosp_dialog_full_holo_light = 0x7f020012;
-		public static final int aosp_indicator_code_lock_drag_direction_green_up = 0x7f020013;
-		public static final int aosp_indicator_code_lock_drag_direction_red_up = 0x7f020014;
-		public static final int aosp_indicator_code_lock_point_area_blue_holo = 0x7f020015;
-		public static final int aosp_indicator_code_lock_point_area_green_holo = 0x7f020016;
-		public static final int aosp_indicator_code_lock_point_area_red_holo = 0x7f020017;
+		public static final int aosp_background_holo_dark = 0x7f020016;
+		public static final int aosp_background_holo_light = 0x7f020017;
+		public static final int aosp_dialog_full_holo_dark = 0x7f020018;
+		public static final int aosp_dialog_full_holo_light = 0x7f020019;
+		public static final int aosp_indicator_code_lock_drag_direction_green_up = 0x7f02001a;
+		public static final int aosp_indicator_code_lock_drag_direction_red_up = 0x7f02001b;
+		public static final int aosp_indicator_code_lock_point_area_blue_holo = 0x7f02001c;
+		public static final int aosp_indicator_code_lock_point_area_green_holo = 0x7f02001d;
+		public static final int aosp_indicator_code_lock_point_area_red_holo = 0x7f02001e;
 	}
 	public static final class id {
 		public static final int alp_42447968_button_cancel = 0x7f0d0004;
