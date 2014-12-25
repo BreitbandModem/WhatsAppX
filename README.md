@@ -23,7 +23,8 @@ Requirements:
 Comments on the Project:
  - Code has no comments yet
  - Project uses Pattern Library from https://code.google.com/p/android-lockpattern/
-   If you want to compile this app, you need to add this lockpattern project to eclipse
+   and Color Picker Library from https://code.google.com/p/android-color-picker/
+   If you want to compile this app, you need to add these projects to eclipse
  - Used Icons: 
    star, wrench: http://icons8.com/
    lock: http://www.psd100.com/go.php?url=zcool.com.cn, http://www.psd100.com/lock-unlock-icons-psd/#.VGNgWvmG-1c
