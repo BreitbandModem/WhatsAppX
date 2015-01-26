@@ -2,6 +2,8 @@ WhatsAppX
 =========
 This project's aim is to extend the functionality of WhatsApp on Android.
 
+Make sure to also check out [WhatsApp Mods](https://github.com/jaysh/xposed-whatsapp/)!
+
 Features:
 
 1. Per Chat Wallpapers
@@ -10,10 +12,9 @@ Features:
 4. Save Favorite messages
 
 Support and further information:
-http://forum.xda-developers.com/xposed/modules/mod-whatsappx-features-whatsapp-t2973749
+[XDA-Thread](http://forum.xda-developers.com/xposed/modules/mod-whatsappx-features-whatsapp-t2973749)
 
-Download:
-http://repo.xposed.info/module/de.bidlingmeyer.xposed.whatsappx
+[Download](http://repo.xposed.info/module/de.bidlingmeyer.xposed.whatsappx)
 
 Requirements:
  - Rooted Android Version 4.1+
