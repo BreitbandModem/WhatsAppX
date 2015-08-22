@@ -12,7 +12,7 @@ public class SaveInfoService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		Helper.saveInfo(this, intent.getStringExtra("conversationName"), intent.getStringExtra("message"), intent.getStringExtra("layoutTime"), intent.getStringExtra("contact"));
+		Helper.saveInfo(this, intent.getStringExtra("conversationName"), intent.getStringExtra("jid"), intent.getStringExtra("message"), intent.getStringExtra("layoutTime"), intent.getStringExtra("contact"));
 		Toast.makeText(this, "Message added to Favorites", Toast.LENGTH_SHORT).show();
 	}
 

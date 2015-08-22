@@ -10,7 +10,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
@@ -42,16 +41,17 @@ public class PagerActivity extends FragmentActivity {
         Intent intent = getIntent();
         fromWhatsapp = intent.getBooleanExtra("whatsapp", false);
         conversationName = intent.getStringExtra("conversationName");
+        jid = intent.getStringExtra("jid");
 			//Toast.makeText(this, "", Toast.LENGTH_LONG).show();        
         
-        SharedPreferences pref2 = getSharedPreferences("contacts", Context.MODE_PRIVATE);
-		jid = pref2.getString(conversationName, "");
+        //SharedPreferences pref2 = getSharedPreferences("contacts", Context.MODE_PRIVATE);
+		//jid = pref2.getString(conversationName, "");
         
         ArrayList<String[]> tabs = Helper.getTabs(this);
         if(tabs.size() == 0){
         	Intent i = new Intent(this, SettingsActivity.class);
         	i.putExtra("whatsapp", fromWhatsapp);
-        	i.putExtra("jid", Helper.getJid(this, conversationName));
+        	i.putExtra("jid", jid);
             startActivity(i);
             finish();
         }

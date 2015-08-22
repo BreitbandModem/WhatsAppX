@@ -24,36 +24,40 @@ public class NotificationService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		String contact = intent.getStringExtra("contact");
+		String jid = intent.getStringExtra("jid");
 		
 		SharedPreferences pref = getSharedPreferences("notification", Context.MODE_PRIVATE);
 		SharedPreferences.Editor edit = pref.edit();
 		
 		myNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		
-		if(contact == null){//restore all notifications
+		if(jid == null){//restore all notifications
 	   		 Map<String, ?> allEntries = pref.getAll();
 	   		 for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-	   			 String cont = entry.getKey();
-	   			 not(cont, getId(cont), intent);
+	   			 //String cont = entry.getKey();
+	   		     //SharedPreferences pref2 = getSharedPreferences("contacts", Context.MODE_PRIVATE);
+	   			 String jid2 = entry.getKey();
+	   			 not(contact, jid2, getId(jid2), intent);
 	   		 }
 		}else{
-			int id = getId(contact);
-			if(id == pref.getInt(contact, 0)){//cancel notification
+			int id = getId(jid);
+			if(id == pref.getInt(jid, 0)){//cancel notification
 				myNotificationManager.cancel(id);
-				edit.remove(contact);
+				edit.remove(jid);
 			}else{//create notification
-				not(contact, id, intent);
-				edit.putInt(contact, id);
+				not(contact, jid, id, intent);
+				edit.putInt(jid, id);
 			}
 			edit.commit();
 			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/notification.xml", true);
 		}
 	}
 	
-	public void not(String cont, int id, Intent intent){
-		
-		SharedPreferences pref2 = getSharedPreferences("contacts", Context.MODE_PRIVATE);
-		String jid = pref2.getString(cont, "");
+	public void not(String contact, String jid, int id, Intent intent){
+		if(contact == null){
+			SharedPreferences pref2 = getSharedPreferences("contactsJid", Context.MODE_PRIVATE);
+			contact = pref2.getString(jid, "");
+		}
 		if(jid.contains("@g.us"))
     		jid = "";
 		Intent resultIntent;
@@ -69,7 +73,7 @@ public class NotificationService extends IntentService {
 		}
     	
         NotificationCompat.Builder  mBuilder = new NotificationCompat.Builder(this);
-        mBuilder.setContentTitle(cont);
+        mBuilder.setContentTitle(contact);
         mBuilder.setContentText("Write back soon!");
         mBuilder.setTicker("reminder set");
         mBuilder.setSmallIcon(R.drawable.ic_reminder_notification);
@@ -84,13 +88,8 @@ public class NotificationService extends IntentService {
         
         myNotificationManager.notify(id, mBuilder.build());
 	}
-	
-	public int getId(String cont){
-		int id = 0;
-		for(int i=0; i<cont.length(); i++){
-			char c = cont.charAt(i);
-			id += c;
-		}
+	public int getId(String jid){
+		int id = Integer.parseInt(jid.split("@")[0].substring(5));
 		return id;
 	}
 }

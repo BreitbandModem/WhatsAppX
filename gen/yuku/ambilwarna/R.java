@@ -8,13 +8,13 @@ package yuku.ambilwarna;
 
 public final class R {
 	public static final class attr {
-		public static final int supportsAlpha = 0x7f010000;
+		public static final int supportsAlpha = 0x7f010005;
 	}
 	public static final class dimen {
-		public static final int ambilwarna_hsvHeight = 0x7f050000;
-		public static final int ambilwarna_hsvWidth = 0x7f050001;
-		public static final int ambilwarna_hueWidth = 0x7f050002;
-		public static final int ambilwarna_spacer = 0x7f050003;
+		public static final int ambilwarna_hsvHeight = 0x7f060001;
+		public static final int ambilwarna_hsvWidth = 0x7f060002;
+		public static final int ambilwarna_hueWidth = 0x7f060003;
+		public static final int ambilwarna_spacer = 0x7f060004;
 	}
 	public static final class drawable {
 		public static final int ambilwarna_alphacheckered = 0x7f02000f;
@@ -26,26 +26,26 @@ public final class R {
 		public static final int ambilwarna_target = 0x7f020015;
 	}
 	public static final class id {
-		public static final int ambilwarna_alphaCheckered = 0x7f0d000a;
-		public static final int ambilwarna_alphaCursor = 0x7f0d000d;
-		public static final int ambilwarna_cursor = 0x7f0d000c;
-		public static final int ambilwarna_dialogView = 0x7f0d0006;
-		public static final int ambilwarna_newColor = 0x7f0d0011;
-		public static final int ambilwarna_oldColor = 0x7f0d0010;
-		public static final int ambilwarna_overlay = 0x7f0d000b;
-		public static final int ambilwarna_pref_widget_box = 0x7f0d0012;
-		public static final int ambilwarna_state = 0x7f0d000f;
-		public static final int ambilwarna_target = 0x7f0d000e;
-		public static final int ambilwarna_viewContainer = 0x7f0d0007;
-		public static final int ambilwarna_viewHue = 0x7f0d0009;
-		public static final int ambilwarna_viewSatBri = 0x7f0d0008;
+		public static final int ambilwarna_alphaCheckered = 0x7f0d000d;
+		public static final int ambilwarna_alphaCursor = 0x7f0d0010;
+		public static final int ambilwarna_cursor = 0x7f0d000f;
+		public static final int ambilwarna_dialogView = 0x7f0d0009;
+		public static final int ambilwarna_newColor = 0x7f0d0014;
+		public static final int ambilwarna_oldColor = 0x7f0d0013;
+		public static final int ambilwarna_overlay = 0x7f0d000e;
+		public static final int ambilwarna_pref_widget_box = 0x7f0d0015;
+		public static final int ambilwarna_state = 0x7f0d0012;
+		public static final int ambilwarna_target = 0x7f0d0011;
+		public static final int ambilwarna_viewContainer = 0x7f0d000a;
+		public static final int ambilwarna_viewHue = 0x7f0d000c;
+		public static final int ambilwarna_viewSatBri = 0x7f0d000b;
 	}
 	public static final class layout {
 		public static final int ambilwarna_dialog = 0x7f030004;
 		public static final int ambilwarna_pref_widget = 0x7f030005;
 	}
 	public static final class styleable {
-		public static final int[] AmbilWarnaPreference = { 0x7f010000 };
+		public static final int[] AmbilWarnaPreference = { 0x7f010005 };
 		public static final int AmbilWarnaPreference_supportsAlpha = 0;
 	}
 }

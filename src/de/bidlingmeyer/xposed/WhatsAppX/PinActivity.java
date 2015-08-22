@@ -9,16 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 public class PinActivity extends Activity{
 	
-	private String pass = "", contact, pin = null;
-	private EditText passText;
+	private String contact;
 	boolean set = false, fromConversations;
 	private static final int REQ_CREATE_PATTERN = 1;
 	private static final int REQ_ENTER_PATTERN = 2;
@@ -43,6 +38,8 @@ public class PinActivity extends Activity{
 			set = true;
 		}
 		Settings.Display.setMinWiredDots(this, 1);
+		SharedPreferences pref2 = getSharedPreferences("preferences", Context.MODE_PRIVATE);
+		Settings.Display.setStealthMode(this, pref2.getBoolean("stealth", false));
 		if(set){
 			this.setFinishOnTouchOutside(true);
 			Intent intent = new Intent(LockPatternActivity.ACTION_CREATE_PATTERN, null, this, LockPatternActivity.class);
@@ -113,7 +110,7 @@ public class PinActivity extends Activity{
 	         * In any case, there's always a key EXTRA_RETRY_COUNT, which holds
 	         * the number of tries that the user did.
 	         */
-	        int retryCount = data.getIntExtra(LockPatternActivity.EXTRA_RETRY_COUNT, 0);
+	        //int retryCount = data.getIntExtra(LockPatternActivity.EXTRA_RETRY_COUNT, 0);
 
 	        break;
 	    }// REQ_ENTER_PATTERN

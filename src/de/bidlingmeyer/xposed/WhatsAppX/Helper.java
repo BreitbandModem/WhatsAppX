@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import de.bidlingmeyer.xposed.WhatsAppX.DatabaseContract.Table1;
-import de.robv.android.xposed.XposedBridge;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -18,7 +17,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
-import android.util.Log;
 import android.widget.Toast;
 
 public class Helper {
@@ -113,9 +111,9 @@ public class Helper {
 		}
 	}
 	
-	public static void saveInfo(Context context, String conversationName, String message, String layoutTime, String contactName){
-		String []info = getMessage(context, conversationName, message, contactName, layoutTime);
-		String jid = "";
+	public static void saveInfo(Context context, String conversationName, String jid, String message, String layoutTime, String contactName){
+		String []info = getMessage(context, conversationName, jid, message, contactName, layoutTime);
+		jid = "";
 		if(info != null){
 			jid = info[1];
 			if(info[0].length() > 5)
@@ -330,12 +328,10 @@ public class Helper {
 		return list;
 	}
 	
-	public static String getStats(String conversationName, Context context){
-		String jid = getJid(context, conversationName);
+	public static String getStats(String jid, Context context){
 		String stats = "";
 		String str = shell("sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Select _id FROM messages WHERE key_from_me=0 AND key_remote_jid=\""+jid+"\"';", true).trim();
 		String [] split = str.split("\n");
-		Log.d("xwhat", "jid: "+jid);
 		stats = "Messages received: "+split.length;
 		str = shell("sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Select _id FROM messages WHERE key_from_me=1 AND key_remote_jid=\""+jid+"\"';", true).trim();
 		split = str.split("\n");
@@ -399,18 +395,17 @@ public class Helper {
 	
 	public static String getJid(Context context, String name){
 		//String Jid = shell("sqlite3 /data/data/com.whatsapp/databases/wa.db 'Select jid FROM wa_contacts WHERE is_whatsapp_user AND display_name=\""+name+"\"'" + "\n").trim();
-		SharedPreferences pref = context.getSharedPreferences("contacts", Context.MODE_PRIVATE);
+		SharedPreferences pref = context.getSharedPreferences("contactsName", Context.MODE_PRIVATE);
 		String jid = pref.getString(name, "");
 		return jid;
 	}
 	
 	@SuppressLint("SimpleDateFormat")
-	public static String[] getMessage(Context context, String conversationName, String message, String contact, String layoutTime){
+	public static String[] getMessage(Context context, String jid, String conversationName, String message, String contact, String layoutTime){
 		String[] msgFrg = message.split("\\W");//"\\P{InBasic_Latin}"
 		
-		SharedPreferences pref = context.getSharedPreferences("contacts", Context.MODE_PRIVATE);
-		String conversationJid = pref.getString(conversationName, "");
-		if(conversationJid.length() < 5){
+		String conversationJid="";;
+		if(jid.length() < 5){
 			return null;
 		}
 		String groupContactJid=null;
@@ -419,7 +414,10 @@ public class Helper {
 			key_from_me = 1;
 		}
 		else if(!conversationName.equals(contact)){
+			SharedPreferences pref = context.getSharedPreferences("contactsName", Context.MODE_PRIVATE);
 			groupContactJid = pref.getString(contact, "");
+		}else{
+			conversationJid = jid;
 		}
 
 		String query = "sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Select timestamp FROM messages WHERE key_remote_jid=\""+conversationJid+"\" AND key_from_me="+key_from_me;

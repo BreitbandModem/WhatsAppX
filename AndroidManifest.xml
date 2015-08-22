@@ -1,19 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.bidlingmeyer.xposed.WhatsAppX"
     android:versionCode="1"
-    android:versionName="1.6" >
+    android:versionName="2.0" >
 
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="19" />
     	
     	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher_grey"
         android:label="@string/app_name" >
+        
+        <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
         
         <activity
     		android:name="com.haibison.android.lockpattern.LockPatternActivity"
@@ -60,12 +63,21 @@
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Holo.Dialog.NoActionBar" />
         
+        <activity
+            android:name="ColorActivity"
+            android:exported="true"
+            android:excludeFromRecents="true" />
+        
         <service
             android:name="NotificationService"
             android:exported="true" />
         
          <service
             android:name="HidePreviewService"
+            android:exported="true" />
+         
+         <service
+            android:name="HideNotificationService"
             android:exported="true" />
         
    		<activity

@@ -5,15 +5,14 @@ import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.LightingColorFilter;
+import android.graphics.PorterDuff.Mode;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -22,8 +21,11 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Switch;
@@ -33,18 +35,20 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 	
 	boolean fromWhatsapp, cannot; 
 	//boolean prefFavSwitch, prefFavCheck, prefWallSwitch, prefLockSwitch, prefRemindSwitch, prefPreviewSwitch, prefManipSwitch, prefLockCheck, prefRemindCheck;
-	boolean prefGear, prefClick, prefLock, prefReminder, prefStar, prefSelfie, prefFavorites;
-	int prefSize, prefColor;
+	boolean prefGear, prefClick, prefLock, prefReminder, prefStar, prefSelfie, prefFavorites, prefPhone, prefKeyboard, prefStealth;
+	int prefSize, prefColor, prefMenuPhone;
 	IntentFilter intentFilter;
 	Intent starterIntent;
 	Receiver rec;
 	String jid="";
+	String notificationText;
 	SharedPreferences prefs;
 	SharedPreferences.Editor edit;
 	SeekBar seekBar;
-	Switch switchClick, switchSelfie, switchFavorites;
-	CheckBox switchGear, switchLock, switchReminder, switchStar;
-	ImageView imageGear, imageLock, imageReminder, imageStar;
+	Switch switchClick, switchSelfie, switchFavorites, switchKeyboard, switchStealth;
+	CheckBox switchGear, switchLock, switchReminder, switchStar, switchPhone;
+	RadioGroup radioMenuPhone;
+	ImageView imageGear, imageLock, imageReminder, imageStar, imagePhone;
 	Button favButton, wallButton, remindButton, previewButton, resetButton, colorButton;
 	ImageView images[];
 	GridLayout gridLayout;
@@ -76,7 +80,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         	edit.putBoolean("sqlite3", true);
         }
         
-        Boolean settings [] = new Boolean[7];
+        Boolean settings [] = new Boolean[10];
         
         settings[0] = prefGear = prefs.getBoolean("gear", true);
         settings[1] = prefClick = prefs.getBoolean("click", false);
@@ -85,15 +89,20 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         settings[4] = prefStar = prefs.getBoolean("star", false);
         settings[5] = prefSelfie = prefs.getBoolean("selfie", true);
         settings[6] = prefFavorites = prefs.getBoolean("favorites", true);
+        settings[7] = prefPhone = prefs.getBoolean("phone", true);
+        settings[8] = prefKeyboard = prefs.getBoolean("keyboard", false);
+        settings[9] = prefStealth = prefs.getBoolean("stealth", false);
+        prefMenuPhone = prefs.getInt("menuPhone", 0);
         prefSize = prefs.getInt("size", 30);
         prefColor = prefs.getInt("color", Color.WHITE);
         
-        images = new ImageView[4];
+        images = new ImageView[5];
         
         images[0] = imageGear = (ImageView) findViewById(R.id.imageViewGear);
         images[1] = imageLock = (ImageView) findViewById(R.id.imageViewLock);
         images[2] = imageReminder = (ImageView) findViewById(R.id.imageViewReminder);
         images[3] = imageStar = (ImageView) findViewById(R.id.imageViewStar);
+        images[4] = imagePhone = (ImageView) findViewById(R.id.imageViewPhone);
         
         int k = Helper.convertDp(this, 5);
         int j = Helper.convertDp(this, 30);
@@ -117,7 +126,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         
         gridLayout = (GridLayout) findViewById(R.id.gridLayout);
         
-        CompoundButton switches [] = new CompoundButton[7];
+        CompoundButton switches [] = new CompoundButton[10];
         
         switches[0] = switchGear = (CheckBox) findViewById(R.id.switchGear);
         switches[1] = switchClick = (Switch) findViewById(R.id.switchClick);
@@ -126,15 +135,61 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         switches[4] = switchStar = (CheckBox) findViewById(R.id.switchStar);
         switches[5] = switchSelfie = (Switch) findViewById(R.id.switchSelfie);
         switches[6] = switchFavorites = (Switch) findViewById(R.id.switchFavorites);
+        switches[7] = switchPhone = (CheckBox) findViewById(R.id.switchPhone);
+        switches[8] = switchKeyboard = (Switch) findViewById(R.id.switchKeyboard);
+        switches[9] = switchStealth = (Switch) findViewById(R.id.switchStealth);
         
         for(int i=0; i<switches.length; i++){
         	switches[i].setChecked(settings[i]);
         	switches[i].setOnCheckedChangeListener(this);
         }
         
+        radioMenuPhone = (RadioGroup) findViewById(R.id.radioMenuPhone);
+        radioMenuPhone.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
+			@Override
+			public void onCheckedChanged(RadioGroup group, int checkedId) {
+				int selection = 0;
+				if(checkedId == R.id.radioMenuPhone1)
+					selection = 0;
+				else if(checkedId == R.id.radioMenuPhone2)
+					selection = 1;
+				else if(checkedId == R.id.radioMenuPhone3)
+					selection = 2;
+				prefMenuPhone = selection;
+				edit.putInt("menuPhone", selection);
+				edit.commit();
+			}
+        });
+        switch(prefMenuPhone){
+        case 0 : RadioButton r1 = (RadioButton) findViewById(R.id.radioMenuPhone1);
+        		 r1.setChecked(true);
+        		 break;
+        case 1 : RadioButton r2 = (RadioButton) findViewById(R.id.radioMenuPhone2);
+		 		 r2.setChecked(true);
+		 		 break;
+        case 2 : RadioButton r3 = (RadioButton) findViewById(R.id.radioMenuPhone3);
+        		 r3.setChecked(true);
+        		 break;
+        }
+        
         seekBar = (SeekBar) findViewById(R.id.seekBar1);
         seekBar.setOnSeekBarChangeListener(this);
         seekBar.setProgress(prefSize-20);
+        
+        
+        notificationText = prefs.getString("notificationText", "");
+        final EditText notificationEdit = (EditText) findViewById(R.id.notificationText);
+        notificationEdit.setText(notificationText);
+        Button saveButton = (Button) findViewById(R.id.saveButton);
+        saveButton.setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View view) {
+				notificationText = notificationEdit.getText().toString();
+				edit.putString("notificationText", notificationText);
+				edit.commit();
+				Toast.makeText(view.getContext(), "saved", Toast.LENGTH_SHORT).show();
+			}
+        });
         
         
         favButton = (Button) findViewById(R.id.button1);
@@ -151,7 +206,10 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 	    colorButton.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
-				AmbilWarnaDialog dialog = new AmbilWarnaDialog(SettingsActivity.this, prefColor, new OnAmbilWarnaListener() {
+				if(prefColor == 0){
+					prefColor = Color.WHITE;
+				}
+				AmbilWarnaDialog dialog = new AmbilWarnaDialog(SettingsActivity.this, prefColor, true, true, new OnAmbilWarnaListener() {
 			        @Override
 			        public void onOk(AmbilWarnaDialog dialog, int color) {
 			            // color is the color selected by the user.
@@ -162,7 +220,8 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 			        		background = true;
 			        	}
 			        	for(int i=0; i<images.length; i++){
-			            	images[i].getDrawable().setColorFilter(new LightingColorFilter( color, color ));
+			        		Mode mMode = Mode.SRC_ATOP;
+			        		images[i].getDrawable().setColorFilter(color,mMode);
 			            	if(background){
 			            		images[i].setBackgroundColor(Color.WHITE);
 			            	}else{
@@ -208,6 +267,15 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 		case R.id.switchFavorites : edit.putBoolean("favorites", isChecked);
 							   prefFavorites = isChecked;
 							   break;
+		case R.id.switchPhone : edit.putBoolean("phone", isChecked);
+							   prefPhone = isChecked;
+							   break;
+		case R.id.switchKeyboard : edit.putBoolean("keyboard", isChecked);
+								prefKeyboard = isChecked;
+								break;
+		case R.id.switchStealth : edit.putBoolean("stealth", isChecked);
+								prefStealth = isChecked;
+								break;
 		}
 	}
 	
@@ -264,8 +332,12 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 	public void click(int id){
 		boolean reset = false;
 		switch(id){
-		case R.id.button7 : SharedPreferences s0 = getSharedPreferences("contacts", Context.MODE_PRIVATE);
+		case R.id.button7 : SharedPreferences s0 = getSharedPreferences("contactsName", Context.MODE_PRIVATE);
 							SharedPreferences.Editor edit0 = s0.edit();
+							edit0.clear();
+							edit0.commit();
+							s0 = getSharedPreferences("contactsJid", Context.MODE_PRIVATE);
+							edit0 = s0.edit();
 							edit0.clear();
 							edit0.commit();
 							s0 = getSharedPreferences("preferences", Context.MODE_PRIVATE);

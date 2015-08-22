@@ -31,7 +31,7 @@
                 android:layout_centerVertical="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:columnCount="4"
+                android:columnCount="5"
                 android:orientation="horizontal"
                 android:rowCount="2" >
 
@@ -66,6 +66,14 @@
                     android:layout_column="3"
                     android:layout_row="0"
                     android:src="@drawable/ic_star_white" />
+                
+                <ImageView
+                    android:id="@+id/imageViewPhone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="4"
+                    android:layout_row="0"
+                    android:src="@drawable/ic_audio_phone_am" />
 
                 <CheckBox
                     android:id="@+id/switchGear"
@@ -96,6 +104,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_column="3"
+                    android:layout_row="1" 
+                    android:paddingRight="15dp" />
+                
+                <CheckBox
+                    android:id="@+id/switchPhone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="4"
                     android:layout_row="1" />
             </GridLayout>
 
@@ -114,6 +130,47 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:max="23" />
+        
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginRight="25dp"
+            android:layout_marginTop="25dp"
+            android:background="@android:color/darker_gray" />
+        
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change the functionality of the stock call button (the one next to the paper clip)"
+            android:paddingBottom="5dp"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+        <RadioGroup
+        android:id="@+id/radioMenuPhone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+            
+	        <RadioButton
+	                    android:id="@+id/radioMenuPhone1"
+	                    android:layout_width="wrap_content"
+	                    android:layout_height="wrap_content"
+	                    android:text="Change nothing"/>
+	        
+	        <RadioButton
+	                    android:id="@+id/radioMenuPhone2"
+	                    android:layout_width="wrap_content"
+	                    android:layout_height="wrap_content"
+	                    android:text="Hide icon"/>
+	        
+	        <RadioButton
+	                    android:id="@+id/radioMenuPhone3"
+	                    android:layout_width="wrap_content"
+	                    android:layout_height="wrap_content"
+	                    android:text="Call over cell (non-whatsapp-call)"/>
+	    </RadioGroup>
         
         <View
             android:layout_width="fill_parent"
@@ -168,6 +225,80 @@
             android:layout_height="wrap_content"
             android:paddingLeft="15dp"
             android:text="All other options" />
+        
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginRight="25dp"
+            android:layout_marginTop="25dp"
+            android:background="@android:color/darker_gray" />
+        
+        <Switch
+            android:id="@+id/switchKeyboard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:text="Force Keyboard to show enter key" />
+        
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginRight="25dp"
+            android:layout_marginTop="25dp"
+            android:background="@android:color/darker_gray" />
+        
+        <Switch
+            android:id="@+id/switchStealth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:text="Hide pattern trail" />
+        
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginRight="25dp"
+            android:layout_marginTop="25dp"
+            android:background="@android:color/darker_gray" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set a replacement text for hidden notifications"
+            android:paddingBottom="5dp"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:orientation="horizontal" >
+
+            <EditText
+                android:id="@+id/notificationText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:ems="10" >
+            </EditText>
+
+            <Button
+                android:id="@+id/saveButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.2"
+                android:text="save" />
+        </LinearLayout>
         
         <View
             android:layout_width="fill_parent"
