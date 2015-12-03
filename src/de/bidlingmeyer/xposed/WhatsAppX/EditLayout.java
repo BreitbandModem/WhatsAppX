@@ -58,12 +58,12 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	String MODULE_PATH, conversationName="", jid="", message="", layoutTime="", contact="", replaceText="", notificationText="";
 	XModuleResources modRes;
 	static ImageButton button = null;
-	FrameLayout cameraLayout, conversationsRowLayout;
+	FrameLayout cameraLayout, conversationsRowLayout, conversationsLayout;
 	int width, height;
 	boolean scramble = false, handleLocked = false, conversationsScreen = false, previewIsGroup = false, previewHide = false, hideNextNotification = false, hideNotification, contactLocked, hasWallpaper, fromConversations;
 	RelativeLayout conversationLayout;
 	ImageButton lockButton, settingsButton, starButton, phoneButton;
-	LinearLayout topLayout, conversationsLayout;
+	LinearLayout topLayout;
 	long actionbarLoad, resumeCreate = 0;
 	ArrayList<String> previewContacts;
 	ArrayList<Integer> previewContactsIsGroup;
@@ -518,7 +518,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		resparam.res.hookLayout("com.whatsapp", "layout", "conversations", new XC_LayoutInflated() {
 			@Override
 			public void handleLayoutInflated(final LayoutInflatedParam liparam) throws Throwable {
-					conversationsLayout = (LinearLayout) liparam.view.findViewById(liparam.res.getIdentifier("chats_layout", "id", "com.whatsapp"));
+					conversationsLayout = (FrameLayout) liparam.view.findViewById(liparam.res.getIdentifier("conversations_empty", "id", "com.whatsapp"));
 					Intent intent = new Intent();
 		         	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.NotificationService"));
 		        	conversationsLayout.getContext().startService(intent);
