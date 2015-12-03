@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.widget.Toast;
 
 public class WallpaperActivity extends Activity {
@@ -48,7 +47,6 @@ public class WallpaperActivity extends Activity {
 	}
 	
 	 private void handleCrop(int resultCode, Intent result) {
-		 Log.i("wallpaper", "ping");
 	        if (resultCode == RESULT_OK) {
 	        	Toast.makeText(this, "Reenter Conversation to apply changes", Toast.LENGTH_SHORT).show();
 	        	finish();

@@ -89,7 +89,13 @@ public class NotificationService extends IntentService {
         myNotificationManager.notify(id, mBuilder.build());
 	}
 	public int getId(String jid){
-		int id = Integer.parseInt(jid.split("@")[0].substring(5));
+		int id;
+		jid = jid.split("@")[0];
+		if(jid.contains("-")){
+			id = Integer.parseInt(jid.split("-")[1].substring(5));
+		}else{
+			id = Integer.parseInt(jid.substring(5));
+		}
 		return id;
 	}
 }

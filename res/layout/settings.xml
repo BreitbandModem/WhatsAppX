@@ -181,6 +181,39 @@
             android:layout_marginTop="25dp"
             android:background="@android:color/darker_gray" />
 
+         <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Highlight group chats in the chat overview"
+            android:paddingBottom="5dp"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+         
+         <Switch
+            android:id="@+id/switchGroupHighlight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:text="Enabled" />
+         
+         <Button
+                android:id="@+id/buttonGroupHighlight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:text="Set Color" />
+        
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginRight="25dp"
+            android:layout_marginTop="25dp"
+            android:background="@android:color/darker_gray" />
+        
         <Switch
             android:id="@+id/switchSelfie"
             android:layout_width="match_parent"
@@ -268,6 +301,22 @@
             android:layout_marginRight="25dp"
             android:layout_marginTop="25dp"
             android:background="@android:color/darker_gray" />
+        
+        <Switch
+            android:id="@+id/switchTicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="15dp"
+            android:text="Show notification message in ticker" />
+        
+        <!-- <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginRight="25dp"
+            android:layout_marginTop="25dp"
+            android:background="@android:color/darker_gray" />
 
         <TextView
             android:id="@+id/textView4"
@@ -298,7 +347,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0.2"
                 android:text="save" />
-        </LinearLayout>
+        </LinearLayout>-->
         
         <View
             android:layout_width="fill_parent"
@@ -313,7 +362,7 @@
                 android:id="@+id/button1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Delete all saved messages" />
+                android:text="Delete all saved messages" />-
         
         <Button
                 android:id="@+id/button2"

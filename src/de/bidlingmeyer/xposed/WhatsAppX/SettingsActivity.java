@@ -35,21 +35,21 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 	
 	boolean fromWhatsapp, cannot; 
 	//boolean prefFavSwitch, prefFavCheck, prefWallSwitch, prefLockSwitch, prefRemindSwitch, prefPreviewSwitch, prefManipSwitch, prefLockCheck, prefRemindCheck;
-	boolean prefGear, prefClick, prefLock, prefReminder, prefStar, prefSelfie, prefFavorites, prefPhone, prefKeyboard, prefStealth;
-	int prefSize, prefColor, prefMenuPhone;
+	boolean prefGear, prefClick, prefLock, prefReminder, prefStar, prefSelfie, prefFavorites, prefPhone, prefKeyboard, prefStealth, prefGroupHighlight, prefTicker;
+	int prefSize, prefColor, prefMenuPhone, prefGroupHighlightColor;
 	IntentFilter intentFilter;
 	Intent starterIntent;
 	Receiver rec;
-	String jid="";
-	String notificationText;
+	String jid="", notificationText="";
+	//String notificationText;
 	SharedPreferences prefs;
 	SharedPreferences.Editor edit;
 	SeekBar seekBar;
-	Switch switchClick, switchSelfie, switchFavorites, switchKeyboard, switchStealth;
+	Switch switchClick, switchSelfie, switchFavorites, switchKeyboard, switchStealth, switchGroupHighlight, switchTicker;
 	CheckBox switchGear, switchLock, switchReminder, switchStar, switchPhone;
 	RadioGroup radioMenuPhone;
 	ImageView imageGear, imageLock, imageReminder, imageStar, imagePhone;
-	Button favButton, wallButton, remindButton, previewButton, resetButton, colorButton;
+	Button favButton, wallButton, remindButton, previewButton, resetButton, colorButton, groupHighlightColorButton;
 	ImageView images[];
 	GridLayout gridLayout;
 
@@ -80,7 +80,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         	edit.putBoolean("sqlite3", true);
         }
         
-        Boolean settings [] = new Boolean[10];
+        Boolean settings [] = new Boolean[12];
         
         settings[0] = prefGear = prefs.getBoolean("gear", true);
         settings[1] = prefClick = prefs.getBoolean("click", false);
@@ -92,9 +92,12 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         settings[7] = prefPhone = prefs.getBoolean("phone", true);
         settings[8] = prefKeyboard = prefs.getBoolean("keyboard", false);
         settings[9] = prefStealth = prefs.getBoolean("stealth", false);
+        settings[10] = prefGroupHighlight = prefs.getBoolean("groupHighlight", false);
+        settings[11] = prefTicker = prefs.getBoolean("ticker", false);
         prefMenuPhone = prefs.getInt("menuPhone", 0);
         prefSize = prefs.getInt("size", 30);
         prefColor = prefs.getInt("color", Color.WHITE);
+        prefGroupHighlightColor = prefs.getInt("groupHighlightColor", 0);
         
         images = new ImageView[5];
         
@@ -126,7 +129,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         
         gridLayout = (GridLayout) findViewById(R.id.gridLayout);
         
-        CompoundButton switches [] = new CompoundButton[10];
+        CompoundButton switches [] = new CompoundButton[12];
         
         switches[0] = switchGear = (CheckBox) findViewById(R.id.switchGear);
         switches[1] = switchClick = (Switch) findViewById(R.id.switchClick);
@@ -138,6 +141,9 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         switches[7] = switchPhone = (CheckBox) findViewById(R.id.switchPhone);
         switches[8] = switchKeyboard = (Switch) findViewById(R.id.switchKeyboard);
         switches[9] = switchStealth = (Switch) findViewById(R.id.switchStealth);
+        switches[10] = switchGroupHighlight = (Switch) findViewById(R.id.switchGroupHighlight);
+        switches[11] = switchTicker = (Switch) findViewById(R.id.switchTicker);
+        
         
         for(int i=0; i<switches.length; i++){
         	switches[i].setChecked(settings[i]);
@@ -177,6 +183,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         seekBar.setProgress(prefSize-20);
         
         
+        /* Hide Notification
         notificationText = prefs.getString("notificationText", "");
         final EditText notificationEdit = (EditText) findViewById(R.id.notificationText);
         notificationEdit.setText(notificationText);
@@ -189,7 +196,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 				edit.commit();
 				Toast.makeText(view.getContext(), "saved", Toast.LENGTH_SHORT).show();
 			}
-        });
+        });*/
         
         
         favButton = (Button) findViewById(R.id.button1);
@@ -198,6 +205,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         previewButton = (Button) findViewById(R.id.button6);
         resetButton = (Button) findViewById(R.id.button7);
         colorButton = (Button) findViewById(R.id.buttonColor);
+        groupHighlightColorButton = (Button) findViewById(R.id.buttonGroupHighlight);
         favButton.setOnClickListener(this);
         wallButton.setOnClickListener(this);
         remindButton.setOnClickListener(this);
@@ -209,7 +217,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 				if(prefColor == 0){
 					prefColor = Color.WHITE;
 				}
-				AmbilWarnaDialog dialog = new AmbilWarnaDialog(SettingsActivity.this, prefColor, true, true, new OnAmbilWarnaListener() {
+				AmbilWarnaDialog dialog = new AmbilWarnaDialog(SettingsActivity.this, prefColor, true, true, false, new OnAmbilWarnaListener() {
 			        @Override
 			        public void onOk(AmbilWarnaDialog dialog, int color) {
 			            // color is the color selected by the user.
@@ -231,16 +239,55 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 			            }
 			        	prefColor = color;
 			        	edit.putInt("color", color);
+			        	edit.commit();
 			        }
 			                
 			        @Override
 			        public void onCancel(AmbilWarnaDialog dialog) {
 			                // cancel was selected by the user
 			        }
+			        
+			        @Override
+			        public void onReset(AmbilWarnaDialog dialog){
+			        	//nosing
+			        }
 				});
 				dialog.show();
 			}
 	    });
+	    groupHighlightColorButton.setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				int tmpColor=prefGroupHighlightColor;
+				if(prefGroupHighlightColor == 0){
+					tmpColor = Color.WHITE;
+				}
+				AmbilWarnaDialog dialog = new AmbilWarnaDialog(SettingsActivity.this, tmpColor, true, false, true, new OnAmbilWarnaListener() {
+			        @Override
+			        public void onOk(AmbilWarnaDialog dialog, int color) {
+			            // color is the color selected by the user.
+			        	prefGroupHighlightColor = color;
+			        	edit.putInt("groupHighlightColor", color);
+			        	edit.commit();
+			        	Toast.makeText(SettingsActivity.this, "Restart Whatsapp to apply change", Toast.LENGTH_SHORT).show();
+			        }
+			                
+			        @Override
+			        public void onCancel(AmbilWarnaDialog dialog) {
+			                // cancel was selected by the user
+			        }
+			        
+			        @Override
+			        public void onReset(AmbilWarnaDialog dialog){
+			        	prefGroupHighlightColor = 0;
+		        		edit.putInt("groupHighlightColor", 0);
+		        		edit.commit();
+		        		Toast.makeText(SettingsActivity.this, "Restart Whatsapp to apply change", Toast.LENGTH_SHORT).show();
+			        }
+				});
+				dialog.show();
+			}
+	    });	    
 	}
 	
 	@Override
@@ -275,6 +322,12 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 								break;
 		case R.id.switchStealth : edit.putBoolean("stealth", isChecked);
 								prefStealth = isChecked;
+								break;
+		case R.id.switchGroupHighlight : edit.putBoolean("groupHighlight", isChecked);
+								prefGroupHighlight = isChecked;
+								break;
+		case R.id.switchTicker : edit.putBoolean("ticker", isChecked);
+								prefTicker = isChecked;
 								break;
 		}
 	}

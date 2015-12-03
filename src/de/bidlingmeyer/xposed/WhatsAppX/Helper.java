@@ -400,6 +400,11 @@ public class Helper {
 		return jid;
 	}
 	
+	public static String deleteMessage(String jid, String message){
+		String result = shell("sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Delete FROM messages WHERE key_remote_jid=\""+jid+"\" AND data=\""+message+"\"';", true).trim();
+		return result;
+	}
+	
 	@SuppressLint("SimpleDateFormat")
 	public static String[] getMessage(Context context, String jid, String conversationName, String message, String contact, String layoutTime){
 		String[] msgFrg = message.split("\\W");//"\\P{InBasic_Latin}"

@@ -1,14 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.bidlingmeyer.xposed.WhatsAppX"
-    android:versionCode="1"
-    android:versionName="2.0" >
+    android:versionCode="5"
+    android:versionName="2.2.1" >
 
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="19" />
     	
-    	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
         <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
 
     <application
@@ -46,6 +46,18 @@
          
          <service
             android:name="RefreshContactsService"
+            android:exported="true" />
+         
+         <service
+            android:name="DeleteMsgService"
+            android:exported="true" />
+         
+         <service
+            android:name="GenerateKeyService"
+            android:exported="true" />
+         
+         <service
+            android:name="SaveKeyService"
             android:exported="true" />
         
         <activity

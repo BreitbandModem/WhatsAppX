@@ -7,13 +7,17 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import yuku.ambilwarna.AmbilWarnaDialog;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.content.res.XModuleResources;
 import android.content.res.XResForwarder;
@@ -24,6 +28,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,6 +53,7 @@ import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LayoutInflated;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources.InitPackageResourcesParam;
@@ -60,7 +66,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	static ImageButton button = null;
 	FrameLayout cameraLayout, conversationsRowLayout;
 	int width, height;
-	boolean scramble = false, handleLocked = false, conversationsScreen = false, previewIsGroup = false, previewHide = false, hideNextNotification = false, hideNotification, contactLocked, hasWallpaper, fromConversations;
+	boolean scramble = false, handleLocked = false, conversationsScreen = false, previewIsGroup = false, previewHide = false, hideNextNotification = false, hideNotification, contactLocked, hasWallpaper, fromConversations, encryptionEnabled;
 	RelativeLayout conversationLayout;
 	ImageButton lockButton, settingsButton, starButton, phoneButton;
 	LinearLayout topLayout, conversationsLayout;
@@ -68,7 +74,10 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	ArrayList<String> previewContacts;
 	ArrayList<Integer> previewContactsIsGroup;
     private static Map<String, String> contacts = new HashMap<String, String>();
-	
+	EditText textEntry;
+	Editable editable;
+	String myPublicKey, myPrivateKey, draft;
+    
 	@Override
     public void initZygote(StartupParam startupParam) throws Throwable {
         MODULE_PATH = startupParam.modulePath;
@@ -90,8 +99,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		contacts = (Map<String, String>) prefs2.getAll();
 		
 		notificationText = prefs.getString("notificationText", "");
-        
-        
+		
         @SuppressWarnings("rawtypes")
 		final Class conversationClass = XposedHelpers.findClass("com.whatsapp.Conversation", lpparam.classLoader);
         
@@ -104,6 +112,58 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
         @SuppressWarnings("rawtypes")
 		final Class textClass = XposedHelpers.findClass("com.whatsapp.TextEmojiLabel", lpparam.classLoader);
         
+        /*
+        //notification
+        XposedHelpers.findAndHookMethod(android.app.Notification.Builder.class, "setContentText", CharSequence.class, new XC_MethodHook(){
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+            	String text;
+            	if(((CharSequence) param.args[0]) != null)
+            		text = ((CharSequence) param.args[0]).toString().trim();
+            	else
+            		return;
+            	XposedBridge.log("notification text: "+text);
+            	
+            	if(hideNextNotification){
+            		XposedBridge.log("parameter resetted");
+            		param.args[0]=notificationText;
+            		hideNextNotification = false;
+            	}
+            }
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+            	XposedBridge.log("parameter check: "+param.args[0]);
+            	android.app.Notification.Builder builder = (Builder) param.getResult();
+            	if(builder != null)
+            		if(prefs.getBoolean("ticker", false))
+            			builder.setTicker((CharSequence) param.args[0]);
+            }            
+        });
+        XposedHelpers.findAndHookMethod(android.app.Notification.Builder.class, "setContentTitle", CharSequence.class, new XC_MethodHook(){
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+            	String title;
+            	if(((CharSequence) param.args[0]) != null)
+            		title = ((CharSequence) param.args[0]).toString().trim();
+            	else
+            		return;
+            	XposedBridge.log("notification title: "+title);
+            	
+            	title = title.contains("@")? title.split("@")[0].trim() : title;
+            	XposedBridge.log("message from: "+title);
+            	XSharedPreferences s = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "hideNotification");
+				s.makeWorldReadable();
+				Map<String, ?> allEntries = s.getAll();
+				if(allEntries.containsKey(title)){
+					hideNextNotification = true;
+					XposedBridge.log("hideNextNotification = true");
+				}else{
+					hideNextNotification = false;
+				}
+            }
+        });*/
+       
+        
         //Get contact jid, name
         XposedHelpers.findAndHookMethod(Intent.class, "getStringExtra", String.class, new XC_MethodHook(){
             @Override
@@ -113,7 +173,15 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	            	if(result.contains("@")){
 		              	jid = result;
 		              	conversationName = contacts.get(jid);
-		              	if(conversationName.length() < 1)
+		              	if(conversationName == null){
+		              		Intent intent = new Intent();
+		    	        	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.RefreshContactsService"));
+		    	        	if(conversationLayout != null){
+		    	        		conversationsLayout.getContext().startService(intent);
+		    	        	}
+		              		conversationName = jid.split("@")[0];
+		              	}
+		              	else if(conversationName.length() < 1)
 		              		conversationName = jid.split("@")[0];
 	            	}
             }
@@ -126,41 +194,22 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
             	int choice = prefs.getInt("menuPhone", 0);
             	final Menu menu = (Menu) param.args[0];
             	MenuItem callMenu = menu.getItem(0);
-            	if(choice == 1){
-            		menu.removeItem(callMenu.getItemId());
-            	}else if(choice == 2){
-            		callMenu.setOnMenuItemClickListener(new OnMenuItemClickListener(){
-						@Override
-						public boolean onMenuItemClick(MenuItem item) {
-							String telNum = jid.split("@")[0];
-							Intent intent = new Intent(Intent.ACTION_DIAL);
-							intent.setData(Uri.parse("tel:+"+telNum));
-							conversationLayout.getContext().startActivity(intent);
-							return true;
-						}
-	            	});
+            	if(callMenu.getTitle().equals("Call")){
+            		if(choice == 1){
+	            		menu.removeItem(callMenu.getItemId());
+	            	}else if(choice == 2){
+	            		callMenu.setOnMenuItemClickListener(new OnMenuItemClickListener(){
+							@Override
+							public boolean onMenuItemClick(MenuItem item) {
+								String telNum = jid.split("@")[0];
+								Intent intent = new Intent(Intent.ACTION_DIAL);
+								intent.setData(Uri.parse("tel:+"+telNum));
+								conversationLayout.getContext().startActivity(intent);
+								return true;
+							}
+		            	});
+	            	}
             	}
-            }
-        });
-        
-        //overwrite notification text
-        @SuppressWarnings("rawtypes")
-		final Class notification4Class = XposedHelpers.findClass("com.whatsapp.util.aq", lpparam.classLoader);
-        XposedHelpers.findAndHookMethod(notification4Class, "a", CharSequence.class, new XC_MethodHook(){
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-            	if(hideNextNotification)
-            		param.setResult(notificationText);
-            	
-            	String text = ((CharSequence) param.args[0]).toString().trim();
-            	XSharedPreferences s = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "hideNotification");
-				s.makeWorldReadable();
-				Map<String, ?> allEntries = s.getAll();
-				if(allEntries.containsKey(text)){
-					hideNextNotification = true;
-				}else{
-					hideNextNotification = false;
-				}
             }
         });
         
@@ -176,6 +225,55 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	            }
 	        });
         }
+        
+        //Encryption:
+        XposedBridge.hookAllConstructors(entryClass, new XC_MethodHook(){
+        	@Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+            	textEntry = (EditText) param.thisObject;
+            }
+        });
+        XposedHelpers.findAndHookMethod(android.widget.ImageView.class, "setImageDrawable", Drawable.class, new XC_MethodHook(){
+        	@Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+        		ImageButton sendButton;
+        		try{
+        			sendButton = (ImageButton) param.thisObject;
+        		}catch(Exception e){
+        			return;
+        		}
+         		sendButton.setOnTouchListener(new OnTouchListener()
+ 				{
+ 					@SuppressLint("ClickableViewAccessibility")
+ 					@Override
+ 					public boolean onTouch(View view, MotionEvent event) {
+ 						if(view == null || view.getContentDescription() == null){
+ 							return false;
+ 						}
+ 						if(view.getContentDescription().equals("Send")){
+ 							String editText = textEntry.getText().toString();
+ 							if(editText.startsWith("[REQUEST_KEY]") || editText.startsWith("[SEND_KEY]") || editText.startsWith("[WHATSAPPX]")){
+ 								return false;
+ 							}else if(encryptionEnabled){
+	 							//[toDo]encrypt text with PublicKey
+ 								XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionKeys");
+ 			   					prefs.makeWorldReadable();
+ 			   					String publicKey = prefs.getString(jid, null);
+ 			   					if(publicKey == null){
+ 			   						//requestKey!!
+ 			   						keyPopup(1, editText);
+ 			   						textEntry.setText("");
+ 			   						return false;
+ 			   					}
+		 						textEntry.setText("[WHATSAPPX][JID="+jid+"][ENCRYPTED]"+editText);
+ 							}
+ 						}
+ 						return false;
+ 					}
+ 				});
+        	}
+        });
+        
         
         //Hide toast from selfie fail
         XposedHelpers.findAndHookMethod(Toast.class, "show", new XC_MethodHook() {
@@ -193,7 +291,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			}
         });
         
-        //hide message preview, scramble/replace text
+        //hide message preview, scramble/replace text, decrypt
         XposedHelpers.findAndHookMethod(textClass, "setText", CharSequence.class, TextView.BufferType.class, new XC_MethodHook(){
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param)
@@ -205,10 +303,50 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				}catch(Exception e){
 					return;
 				}
-   				
+				
    				if(text.length() == 0)
    					return;
    				
+   				//[WHATSAPPX][JID=324][ENCRYPTED/REQUEST_KEY/SEND_KEY][KEY=234]MESSAGE
+   				if(text.startsWith("[WHATSAPPX]")){
+   					String message = text;
+   					text = text.substring(11);
+   					XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionKeys");
+	   				prefs.makeWorldReadable();
+	   				String key = prefs.getString(jid, null);
+	   				//XposedBridge.log("whatsappX message");
+	   				if(text.startsWith("[JID=")){
+	   					String jidX = text.substring(5, text.indexOf(']'));
+	   					boolean fromMe = false;
+	   					if(jidX.equals(jid))
+	   						fromMe = true;
+	   					//XposedBridge.log("from me: "+fromMe);
+	   					text = text.substring(text.indexOf(']')+1);
+	   					
+		   				if(text.startsWith("[ENCRYPTED]")){
+		   					if(!fromMe && key == null){
+		   						keyPopup(1);
+		   						//XposedBridge.log("encrypted, no key");
+		   					}else{
+		   						//XposedBridge.log("decrypt..");
+			   					//decrypt
+				   					//[encrypted][jid]text
+				   					
+				   					//[toDo]decrypt with myPrivateKey
+				   					param.args[0] = "[decrypted]"+text;
+		   					}
+		   				}else if(text.startsWith("[REQUEST_KEY]") && !fromMe){
+		   					//XposedBridge.log("request key");
+		   					getRequestKey(message);
+		   					param.args[0] = "[WHATSAPPX][KEY_SENT]";
+		   				}else if(text.startsWith("[SEND_KEY]") && !fromMe){
+		   					//XposedBridge.log("send key");
+		   					getSendKey(message);
+		   					param.args[0] = "[WHATSAPPX][KEY_SAVED]";
+		   				}
+	   				}
+	   				return;
+   				}
 			    
 			    if(conversationsScreen && previewContacts.size() > 0){
 
@@ -332,6 +470,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param)throws Throwable {
 				super.beforeHookedMethod(param);
+				encryptionEnabled = false;
 				handleLocked = false;
 				contactLocked = false;
 				hideNotification = false;
@@ -348,6 +487,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				conversationName = "";
 				jid="";
 				resumeCreate = 0;
+				encryptionEnabled = false;
 				conversationLayout = null;
 				handleLocked = false;
 				contactLocked = false;
@@ -407,7 +547,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
         }
 		modRes = XModuleResources.createInstance(MODULE_PATH, resparam.res);
 
-		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
+		final XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
 		prefs.makeWorldReadable();
 		if(!prefs.getBoolean("sqlite3", true))
 			return;
@@ -417,7 +557,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			resparam.res.setReplacement("com.whatsapp", "string", "cannot_start_camera", "sorry, whatsappX fail^^");
 		}
 		//resparam.res.setReplacement("com.whatsapp", "integer", "abc_max_action_buttons", 1);
-		
 		
 		//camera
 		resparam.res.hookLayout("com.whatsapp", "layout", "camera", new XC_LayoutInflated() {
@@ -454,6 +593,14 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 					Intent intent = new Intent();
 		         	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.NotificationService"));
 		        	conversationsLayout.getContext().startService(intent);
+		        	
+		        	myPublicKey = prefs.getString("myPublicKey", null);
+		    		myPrivateKey = prefs.getString("myPrivateKey", null);
+		    		if(myPublicKey == null){
+		    			intent = new Intent();
+		    			intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX","de.bidlingmeyer.xposed.WhatsAppX.GenerateKeyService"));
+		    			conversationsLayout.getContext().startService(intent);
+		    		}
 			}
 		});
 
@@ -478,7 +625,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				
 				int i = Helper.convertDp(layout.getContext(), 5);
 				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(Helper.convertDp(layout.getContext(), prefs.getInt("size", 30)), LayoutParams.MATCH_PARENT);
-				int color = prefs.getInt("color", Color.WHITE);
+				final int color = prefs.getInt("color", Color.WHITE);
 				XResForwarder x=null;
 				
 				if(prefs.getBoolean("gear", true)){
@@ -681,7 +828,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				
 				final String phoneNumber = jid;
 				if(!phoneNumber.contains("@g.us")){
-					if(prefs.getBoolean("phone", false)){
+					if(prefs.getBoolean("phone", true)){
 						phoneButton = new ImageButton(layout.getContext());
 						phoneButton.setBackgroundColor(Color.TRANSPARENT);
 						phoneButton.setOnTouchListener(new OnTouchListener(){
@@ -725,6 +872,62 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 						layout.addView(phoneButton);
 					}
 				}
+				
+				
+				final ImageButton encryptButton = new ImageButton(layout.getContext());
+				encryptButton.setBackgroundColor(Color.TRANSPARENT);
+				encryptButton.setOnTouchListener(new OnTouchListener(){
+					@SuppressLint("ClickableViewAccessibility")
+					@Override
+					public boolean onTouch(View v, MotionEvent event) {
+						if(event.getAction() == MotionEvent.ACTION_DOWN){
+							encryptButton.setBackgroundColor(Color.LTGRAY);
+						}else if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL){
+							encryptButton.setBackgroundColor(Color.TRANSPARENT);
+						}
+						return false;
+					}
+				});
+				encryptButton.setOnClickListener(new OnClickListener(){
+					@SuppressLint("ClickableViewAccessibility")
+					@Override
+					public void onClick(View v) {
+						encryptionEnabled = !encryptionEnabled;
+						Drawable d;
+						XResForwarder x;
+						if(color == 0){
+					    	d = new ColorDrawable(Color.TRANSPARENT);
+					    }else{
+					    	if(encryptionEnabled){
+					    		x = modRes.fwd(R.drawable.ic_locked);
+							}else{
+								x = modRes.fwd(R.drawable.ic_unlocked);
+							}
+					    	d = x.getResources().getDrawable(x.getId());
+						    Mode mMode = Mode.SRC_ATOP;
+						    d.setColorFilter(color,mMode);
+					    }
+						encryptButton.setImageDrawable(d);
+					}
+				});
+				if(encryptionEnabled)
+					x = modRes.fwd(R.drawable.ic_locked);
+				else
+					x = modRes.fwd(R.drawable.ic_unlocked);
+			    encryptButton.setLayoutParams(params);
+			    encryptButton.setPadding(i, 0, i, 0);
+			    encryptButton.setScaleType(ImageButton.ScaleType.CENTER_INSIDE);
+			    encryptButton.setAdjustViewBounds(true);
+			    Drawable d;
+			    if(color == 0){
+			    	d = new ColorDrawable(Color.TRANSPARENT);
+			    }else{
+			    	d = x.getResources().getDrawable(x.getId());
+				    Mode mMode = Mode.SRC_ATOP;
+				    d.setColorFilter(color,mMode);
+			    }
+			    encryptButton.setImageDrawable(d);
+				layout.addView(encryptButton);
 			}
 		 });
 		
@@ -760,39 +963,37 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		 });
 		
 		//Text Messages Right
-				resparam.res.hookLayout("com.whatsapp", "layout", "conversation_row_text_right", new XC_LayoutInflated() {
-					@Override
-					public void handleLayoutInflated(final LayoutInflatedParam liparam) throws Throwable {
-						final LinearLayout layout = (LinearLayout) liparam.view.findViewById(liparam.res.getIdentifier("text_layout", "id", "com.whatsapp"));
-						if(!handleLocked){
-							resumeCreate();
-						}
+		resparam.res.hookLayout("com.whatsapp", "layout", "conversation_row_text_right", new XC_LayoutInflated() {
+			@Override
+			public void handleLayoutInflated(final LayoutInflatedParam liparam) throws Throwable {
+				final LinearLayout layout = (LinearLayout) liparam.view.findViewById(liparam.res.getIdentifier("text_layout", "id", "com.whatsapp"));
+				if(!handleLocked){
+					resumeCreate();
+				}
+				
+				XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
+				prefs.makeWorldReadable();
+				if(prefs.getBoolean("favorites", true) || prefs.getBoolean("click", false))
+				layout.setOnLongClickListener(new OnLongClickListener()
+				{
+				    @Override
+					public boolean onLongClick(View v)
+				    {
 						
-						XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
-						prefs.makeWorldReadable();
-						if(prefs.getBoolean("favorites", true) || prefs.getBoolean("click", false))
-						layout.setOnLongClickListener(new OnLongClickListener()
-						{
-						    @Override
-							public boolean onLongClick(View v)
-						    {
-								
-								TextView messageView = (TextView) liparam.view.findViewById(liparam.res.getIdentifier("message_text", "id", "com.whatsapp"));
-								TextView dateView = (TextView) liparam.view.findViewById(liparam.res.getIdentifier("date", "id", "com.whatsapp"));
-								
-								message = messageView.getText().toString().trim();
-								layoutTime = dateView.getText().toString().trim();
-								contact = "myself";
-								
-								showDialog(layout.getContext(), v, false);
-								
-								return false;
-							}
-						});
+						TextView messageView = (TextView) liparam.view.findViewById(liparam.res.getIdentifier("message_text", "id", "com.whatsapp"));
+						TextView dateView = (TextView) liparam.view.findViewById(liparam.res.getIdentifier("date", "id", "com.whatsapp"));
 						
-			       			
-						}
-				 });
+						message = messageView.getText().toString().trim();
+						layoutTime = dateView.getText().toString().trim();
+						contact = "myself";
+						
+						showDialog(layout.getContext(), v, false);
+						
+						return false;
+					}
+				});
+			}
+		 });
 	}	
 	
 	public void resumeCreate(){
@@ -810,6 +1011,10 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			return;
 		}
 		resumeCreate = System.currentTimeMillis();
+		
+		XSharedPreferences prefsEncryption = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionEnabled");
+		prefsEncryption.makeWorldReadable();
+		encryptionEnabled = prefsEncryption.getBoolean(jid, false);
 		
 		XSharedPreferences prefsNotif = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "hideNotification");
 		prefsNotif.makeWorldReadable();
@@ -854,9 +1059,99 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
    		}
 	}
 	
+	public void keyPopup(final int mode){
+		String draft = textEntry.getText().toString();
+		keyPopup(mode, draft);
+	}
+	public void keyPopup(final int mode, String draft){
+		String message="";
+		
+		//mode: 1-sendRequest 2-sendKey
+		switch(mode){
+		case 1:	message = "Request public key?"; break;
+		case 2:	message = "Send public key?"; break;
+		}
+		
+		if(draft.length()>0){
+			draft = "Your draft will be restored: "+draft;
+		}
+		Dialog dialog = new AlertDialog.Builder(conversationLayout.getContext())
+		.setMessage(message+"\n"+draft)
+		.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				switch(mode){
+				case 1: textEntry.setText("[WHATSAPPX][JID="+jid+"][REQUEST_KEY]"+"[KEY="+myPublicKey+"]"); break;
+				case 2: textEntry.setText("[WHATSAPPX][JID="+jid+"][Send_KEY]"+"[KEY="+myPublicKey+"]"); break;
+				}
+			}
+		})
+		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) {
+				
+			}
+		}).create();
+		dialog.show();
+	}
+	
+	public void getRequestKey(String message){
+		XposedBridge.log("get request key");
+		//save key
+		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionKeys");
+		prefs.makeWorldReadable();
+		String key = message.split("]")[1];
+		if(key.startsWith("[KEY=")){
+			key = key.substring(5);
+			Intent intent = new Intent();
+	    	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.SaveKeyService"));
+	    	intent.putExtra("jid", jid);
+	    	intent.putExtra("key", key);
+	    	conversationLayout.getContext().startService(intent);
+		}
+		
+		//send key
+		keyPopup(2);
+		
+		XposedBridge.log("start delete: "+"sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Delete FROM messages WHERE key_remote_jid=\""+jid+"\" AND data=\""+message.trim()+"\"'" );
+		//delete request
+		Intent intent = new Intent();
+    	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.deleteMsgService"));
+    	intent.putExtra("jid", jid);
+    	intent.putExtra("message", message);
+    	conversationLayout.getContext().startService(intent);
+    	XposedBridge.log("end delete");
+	}
+	
+	public void getSendKey(String message){
+		XposedBridge.log("get send key");
+		//save key
+		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionKeys");
+		prefs.makeWorldReadable();
+		String key = message.split("]")[1];
+		if(key.startsWith("[KEY=")){
+			key = key.substring(5);
+			Intent intent = new Intent();
+	    	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.SaveKeyService"));
+	    	intent.putExtra("jid", jid);
+	    	intent.putExtra("key", key);
+	    	conversationLayout.getContext().startService(intent);
+		}
+		
+		//delete send
+		Intent intent = new Intent();
+    	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.deleteMsgService"));
+    	intent.putExtra("jid", jid);
+    	intent.putExtra("message", message);
+    	conversationLayout.getContext().startService(intent);
+	}
+	
 	public void showDialog(final Context context, View v, boolean fromGear){
 		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
 		prefs.makeWorldReadable();
+		XSharedPreferences notPrefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "notification");
+		notPrefs.makeWorldReadable();
+		boolean reminderActive = notPrefs.getInt(jid, 0) > 0;
 		PopupMenu popup = new PopupMenu(context, v);
 		boolean tmpBool = false;
     	loadPreviewContacts();
@@ -872,9 +1167,9 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			}
 
 			if(prefs.getBoolean("click", false) || fromGear){
-				popup.getMenu().add(Menu.NONE, 9, 3, "Set Color");
+				popup.getMenu().add(Menu.NONE, 9, 3, "Highlight contact");
 				
-				MenuItem notificationItem = popup.getMenu().add(Menu.NONE, 10, 5, "Hide notification text");
+				/*MenuItem notificationItem = popup.getMenu().add(Menu.NONE, 10, 5, "Hide notification text");
 				notificationItem.setCheckable(true);
 				if(hideNotification){
 					//item = popup.getMenu().add(Menu.NONE, 10, Menu.NONE, "show notification text");
@@ -882,10 +1177,16 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				}else{
 					//item = popup.getMenu().add(Menu.NONE, 10, Menu.NONE, "hide notification text");
 					notificationItem.setChecked(false);
-				}
+				}*/
 				
-				if(!prefs.getBoolean("reminder", true))
-					popup.getMenu().add(Menu.NONE, 6, 1, "Add Reminder");
+				if(!prefs.getBoolean("reminder", true)){
+					MenuItem reminderItem = popup.getMenu().add(Menu.NONE, 6, 1, "Set Reminder");
+					reminderItem.setCheckable(true);
+					if(reminderActive)
+						reminderItem.setChecked(true);
+					else
+						reminderItem.setChecked(false);
+				}
 				
 				if(!prefs.getBoolean("lock", false)){
 					MenuItem lockItem = popup.getMenu().add(Menu.NONE, 1, 4, "Lock Contact");
@@ -1048,12 +1349,12 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			        	intent.putExtra("isGroup", !contact.equals(conversationName));
 			        	context.startService(intent);
 			        	if(hide){
-			        		Toast.makeText(context, "Show Prview", Toast.LENGTH_SHORT).show();
-			        		item.setChecked(true);
+			        		Toast.makeText(context, "Show Preview", Toast.LENGTH_SHORT).show();
+			        		item.setChecked(false);
 			        		//item.setTitle("Hide Message Preview");
 						}else{
-							Toast.makeText(context, "Hide Prview", Toast.LENGTH_SHORT).show();
-							item.setChecked(false);
+							Toast.makeText(context, "Hide Preview", Toast.LENGTH_SHORT).show();
+							item.setChecked(true);
 							//item.setTitle("Show Message Preview");
 						}
 			        	keepMenuOpen(item, context);
@@ -1064,7 +1365,9 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			         	intent.putExtra("contact", conversationName);
 			         	intent.putExtra("jid", jid);
 			        	context.startService(intent);
-			        	return true;
+			        	item.setChecked(!item.isChecked());
+			        	keepMenuOpen(item, context);
+			        	return false;
             	 case 7 :
             		 	intent = new Intent();
 			         	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.StatsActivity"));
