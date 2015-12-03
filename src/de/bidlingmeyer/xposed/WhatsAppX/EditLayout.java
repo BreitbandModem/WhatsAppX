@@ -7,17 +7,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import yuku.ambilwarna.AmbilWarnaDialog;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.content.res.XModuleResources;
 import android.content.res.XResForwarder;
@@ -28,7 +24,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,7 +48,6 @@ import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LayoutInflated;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources.InitPackageResourcesParam;
@@ -66,7 +60,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	static ImageButton button = null;
 	FrameLayout cameraLayout, conversationsRowLayout;
 	int width, height;
-	boolean scramble = false, handleLocked = false, conversationsScreen = false, previewIsGroup = false, previewHide = false, hideNextNotification = false, hideNotification, contactLocked, hasWallpaper, fromConversations, encryptionEnabled;
+	boolean scramble = false, handleLocked = false, conversationsScreen = false, previewIsGroup = false, previewHide = false, hideNextNotification = false, hideNotification, contactLocked, hasWallpaper, fromConversations;
 	RelativeLayout conversationLayout;
 	ImageButton lockButton, settingsButton, starButton, phoneButton;
 	LinearLayout topLayout, conversationsLayout;
@@ -75,8 +69,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	ArrayList<Integer> previewContactsIsGroup;
     private static Map<String, String> contacts = new HashMap<String, String>();
 	EditText textEntry;
-	Editable editable;
-	String myPublicKey, myPrivateKey, draft;
     
 	@Override
     public void initZygote(StartupParam startupParam) throws Throwable {
@@ -226,7 +218,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	        });
         }
         
-        //Encryption:
+        /*Encryption:
         XposedBridge.hookAllConstructors(entryClass, new XC_MethodHook(){
         	@Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -247,32 +239,12 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
  					@SuppressLint("ClickableViewAccessibility")
  					@Override
  					public boolean onTouch(View view, MotionEvent event) {
- 						if(view == null || view.getContentDescription() == null){
- 							return false;
- 						}
- 						if(view.getContentDescription().equals("Send")){
- 							String editText = textEntry.getText().toString();
- 							if(editText.startsWith("[REQUEST_KEY]") || editText.startsWith("[SEND_KEY]") || editText.startsWith("[WHATSAPPX]")){
- 								return false;
- 							}else if(encryptionEnabled){
-	 							//[toDo]encrypt text with PublicKey
- 								XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionKeys");
- 			   					prefs.makeWorldReadable();
- 			   					String publicKey = prefs.getString(jid, null);
- 			   					if(publicKey == null){
- 			   						//requestKey!!
- 			   						keyPopup(1, editText);
- 			   						textEntry.setText("");
- 			   						return false;
- 			   					}
-		 						textEntry.setText("[WHATSAPPX][JID="+jid+"][ENCRYPTED]"+editText);
- 							}
- 						}
+ 						//on send button press
  						return false;
  					}
  				});
         	}
-        });
+        });*/
         
         
         //Hide toast from selfie fail
@@ -306,47 +278,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				
    				if(text.length() == 0)
    					return;
-   				
-   				//[WHATSAPPX][JID=324][ENCRYPTED/REQUEST_KEY/SEND_KEY][KEY=234]MESSAGE
-   				if(text.startsWith("[WHATSAPPX]")){
-   					String message = text;
-   					text = text.substring(11);
-   					XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionKeys");
-	   				prefs.makeWorldReadable();
-	   				String key = prefs.getString(jid, null);
-	   				//XposedBridge.log("whatsappX message");
-	   				if(text.startsWith("[JID=")){
-	   					String jidX = text.substring(5, text.indexOf(']'));
-	   					boolean fromMe = false;
-	   					if(jidX.equals(jid))
-	   						fromMe = true;
-	   					//XposedBridge.log("from me: "+fromMe);
-	   					text = text.substring(text.indexOf(']')+1);
-	   					
-		   				if(text.startsWith("[ENCRYPTED]")){
-		   					if(!fromMe && key == null){
-		   						keyPopup(1);
-		   						//XposedBridge.log("encrypted, no key");
-		   					}else{
-		   						//XposedBridge.log("decrypt..");
-			   					//decrypt
-				   					//[encrypted][jid]text
-				   					
-				   					//[toDo]decrypt with myPrivateKey
-				   					param.args[0] = "[decrypted]"+text;
-		   					}
-		   				}else if(text.startsWith("[REQUEST_KEY]") && !fromMe){
-		   					//XposedBridge.log("request key");
-		   					getRequestKey(message);
-		   					param.args[0] = "[WHATSAPPX][KEY_SENT]";
-		   				}else if(text.startsWith("[SEND_KEY]") && !fromMe){
-		   					//XposedBridge.log("send key");
-		   					getSendKey(message);
-		   					param.args[0] = "[WHATSAPPX][KEY_SAVED]";
-		   				}
-	   				}
-	   				return;
-   				}
 			    
 			    if(conversationsScreen && previewContacts.size() > 0){
 
@@ -470,7 +401,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param)throws Throwable {
 				super.beforeHookedMethod(param);
-				encryptionEnabled = false;
 				handleLocked = false;
 				contactLocked = false;
 				hideNotification = false;
@@ -487,7 +417,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				conversationName = "";
 				jid="";
 				resumeCreate = 0;
-				encryptionEnabled = false;
 				conversationLayout = null;
 				handleLocked = false;
 				contactLocked = false;
@@ -593,14 +522,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 					Intent intent = new Intent();
 		         	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.NotificationService"));
 		        	conversationsLayout.getContext().startService(intent);
-		        	
-		        	myPublicKey = prefs.getString("myPublicKey", null);
-		    		myPrivateKey = prefs.getString("myPrivateKey", null);
-		    		if(myPublicKey == null){
-		    			intent = new Intent();
-		    			intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX","de.bidlingmeyer.xposed.WhatsAppX.GenerateKeyService"));
-		    			conversationsLayout.getContext().startService(intent);
-		    		}
 			}
 		});
 
@@ -872,62 +793,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 						layout.addView(phoneButton);
 					}
 				}
-				
-				
-				final ImageButton encryptButton = new ImageButton(layout.getContext());
-				encryptButton.setBackgroundColor(Color.TRANSPARENT);
-				encryptButton.setOnTouchListener(new OnTouchListener(){
-					@SuppressLint("ClickableViewAccessibility")
-					@Override
-					public boolean onTouch(View v, MotionEvent event) {
-						if(event.getAction() == MotionEvent.ACTION_DOWN){
-							encryptButton.setBackgroundColor(Color.LTGRAY);
-						}else if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL){
-							encryptButton.setBackgroundColor(Color.TRANSPARENT);
-						}
-						return false;
-					}
-				});
-				encryptButton.setOnClickListener(new OnClickListener(){
-					@SuppressLint("ClickableViewAccessibility")
-					@Override
-					public void onClick(View v) {
-						encryptionEnabled = !encryptionEnabled;
-						Drawable d;
-						XResForwarder x;
-						if(color == 0){
-					    	d = new ColorDrawable(Color.TRANSPARENT);
-					    }else{
-					    	if(encryptionEnabled){
-					    		x = modRes.fwd(R.drawable.ic_locked);
-							}else{
-								x = modRes.fwd(R.drawable.ic_unlocked);
-							}
-					    	d = x.getResources().getDrawable(x.getId());
-						    Mode mMode = Mode.SRC_ATOP;
-						    d.setColorFilter(color,mMode);
-					    }
-						encryptButton.setImageDrawable(d);
-					}
-				});
-				if(encryptionEnabled)
-					x = modRes.fwd(R.drawable.ic_locked);
-				else
-					x = modRes.fwd(R.drawable.ic_unlocked);
-			    encryptButton.setLayoutParams(params);
-			    encryptButton.setPadding(i, 0, i, 0);
-			    encryptButton.setScaleType(ImageButton.ScaleType.CENTER_INSIDE);
-			    encryptButton.setAdjustViewBounds(true);
-			    Drawable d;
-			    if(color == 0){
-			    	d = new ColorDrawable(Color.TRANSPARENT);
-			    }else{
-			    	d = x.getResources().getDrawable(x.getId());
-				    Mode mMode = Mode.SRC_ATOP;
-				    d.setColorFilter(color,mMode);
-			    }
-			    encryptButton.setImageDrawable(d);
-				layout.addView(encryptButton);
 			}
 		 });
 		
@@ -1012,10 +877,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		}
 		resumeCreate = System.currentTimeMillis();
 		
-		XSharedPreferences prefsEncryption = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionEnabled");
-		prefsEncryption.makeWorldReadable();
-		encryptionEnabled = prefsEncryption.getBoolean(jid, false);
-		
 		XSharedPreferences prefsNotif = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "hideNotification");
 		prefsNotif.makeWorldReadable();
 		hideNotification = prefsNotif.getBoolean(conversationName, false);
@@ -1057,93 +918,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
    			previewContactsIsGroup.add( (Integer) entry.getValue() );
    			previewContacts.add(entry.getKey());
    		}
-	}
-	
-	public void keyPopup(final int mode){
-		String draft = textEntry.getText().toString();
-		keyPopup(mode, draft);
-	}
-	public void keyPopup(final int mode, String draft){
-		String message="";
-		
-		//mode: 1-sendRequest 2-sendKey
-		switch(mode){
-		case 1:	message = "Request public key?"; break;
-		case 2:	message = "Send public key?"; break;
-		}
-		
-		if(draft.length()>0){
-			draft = "Your draft will be restored: "+draft;
-		}
-		Dialog dialog = new AlertDialog.Builder(conversationLayout.getContext())
-		.setMessage(message+"\n"+draft)
-		.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				switch(mode){
-				case 1: textEntry.setText("[WHATSAPPX][JID="+jid+"][REQUEST_KEY]"+"[KEY="+myPublicKey+"]"); break;
-				case 2: textEntry.setText("[WHATSAPPX][JID="+jid+"][Send_KEY]"+"[KEY="+myPublicKey+"]"); break;
-				}
-			}
-		})
-		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface arg0, int arg1) {
-				
-			}
-		}).create();
-		dialog.show();
-	}
-	
-	public void getRequestKey(String message){
-		XposedBridge.log("get request key");
-		//save key
-		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionKeys");
-		prefs.makeWorldReadable();
-		String key = message.split("]")[1];
-		if(key.startsWith("[KEY=")){
-			key = key.substring(5);
-			Intent intent = new Intent();
-	    	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.SaveKeyService"));
-	    	intent.putExtra("jid", jid);
-	    	intent.putExtra("key", key);
-	    	conversationLayout.getContext().startService(intent);
-		}
-		
-		//send key
-		keyPopup(2);
-		
-		XposedBridge.log("start delete: "+"sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Delete FROM messages WHERE key_remote_jid=\""+jid+"\" AND data=\""+message.trim()+"\"'" );
-		//delete request
-		Intent intent = new Intent();
-    	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.deleteMsgService"));
-    	intent.putExtra("jid", jid);
-    	intent.putExtra("message", message);
-    	conversationLayout.getContext().startService(intent);
-    	XposedBridge.log("end delete");
-	}
-	
-	public void getSendKey(String message){
-		XposedBridge.log("get send key");
-		//save key
-		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "encryptionKeys");
-		prefs.makeWorldReadable();
-		String key = message.split("]")[1];
-		if(key.startsWith("[KEY=")){
-			key = key.substring(5);
-			Intent intent = new Intent();
-	    	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.SaveKeyService"));
-	    	intent.putExtra("jid", jid);
-	    	intent.putExtra("key", key);
-	    	conversationLayout.getContext().startService(intent);
-		}
-		
-		//delete send
-		Intent intent = new Intent();
-    	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.deleteMsgService"));
-    	intent.putExtra("jid", jid);
-    	intent.putExtra("message", message);
-    	conversationLayout.getContext().startService(intent);
 	}
 	
 	public void showDialog(final Context context, View v, boolean fromGear){
