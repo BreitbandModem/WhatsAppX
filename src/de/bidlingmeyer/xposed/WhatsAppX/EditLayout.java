@@ -800,7 +800,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		resparam.res.hookLayout("com.whatsapp", "layout", "conversation_row_text_left", new XC_LayoutInflated() {
 			@Override
 			public void handleLayoutInflated(final LayoutInflatedParam liparam) throws Throwable {
-				final LinearLayout layout = (LinearLayout) liparam.view.findViewById(liparam.res.getIdentifier("text_layout", "id", "com.whatsapp"));
+				final LinearLayout layout = (LinearLayout) liparam.view.findViewById(liparam.res.getIdentifier("main_layout", "id", "com.whatsapp"));
 				if(!handleLocked){
 					resumeCreate();
 				}
@@ -831,7 +831,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		resparam.res.hookLayout("com.whatsapp", "layout", "conversation_row_text_right", new XC_LayoutInflated() {
 			@Override
 			public void handleLayoutInflated(final LayoutInflatedParam liparam) throws Throwable {
-				final LinearLayout layout = (LinearLayout) liparam.view.findViewById(liparam.res.getIdentifier("text_layout", "id", "com.whatsapp"));
+				final LinearLayout layout = (LinearLayout) liparam.view.findViewById(liparam.res.getIdentifier("main_layout", "id", "com.whatsapp"));
 				if(!handleLocked){
 					resumeCreate();
 				}
