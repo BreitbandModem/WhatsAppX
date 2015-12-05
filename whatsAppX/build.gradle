@@ -1,0 +1,32 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        applicationId "de.bidlingmeyer.xposed.WhatsAppX"
+        minSdkVersion 16
+        targetSdkVersion 19
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+
+    dexOptions {
+        preDexLibraries = false
+    }
+}
+
+dependencies {
+    compile project(':ambilWarna')
+    compile project(':androidcrop')
+    compile 'com.haibison.android.lockpattern:app-debug:1'
+    compile 'com.android.support:support-v4:19.1.0'
+    compile files('src/main/assets/libs/android-support-v4.jar')
+    compile files('src/main/assets/lib/XposedBridgeApi-20150213.jar')
+}
