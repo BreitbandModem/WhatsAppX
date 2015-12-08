@@ -57,18 +57,15 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	
 	String MODULE_PATH, conversationName="", jid="", message="", layoutTime="", contact="", replaceText="", notificationText="";
 	XModuleResources modRes;
-	static ImageButton button = null;
-	FrameLayout cameraLayout, conversationsRowLayout, conversationsLayout;
+	FrameLayout cameraLayout, conversationsLayout;
 	int width, height;
 	boolean scramble = false, handleLocked = false, conversationsScreen = false, previewIsGroup = false, previewHide = false, hideNextNotification = false, hideNotification, contactLocked, hasWallpaper, fromConversations;
 	RelativeLayout conversationLayout;
 	ImageButton lockButton, settingsButton, starButton, phoneButton;
-	LinearLayout topLayout;
 	long actionbarLoad, resumeCreate = 0;
 	ArrayList<String> previewContacts;
 	ArrayList<Integer> previewContactsIsGroup;
     private static Map<String, String> contacts = new HashMap<String, String>();
-	EditText textEntry;
     
 	@Override
     public void initZygote(StartupParam startupParam) throws Throwable {
