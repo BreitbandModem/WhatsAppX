@@ -48,6 +48,7 @@ import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LayoutInflated;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources.InitPackageResourcesParam;
@@ -175,14 +176,13 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	            	}
             }
         });
-        
-        
+
         XposedHelpers.findAndHookMethod(conversationClass, "onCreateOptionsMenu", Menu.class, new XC_MethodHook(){
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-            	int choice = prefs.getInt("menuPhone", 0);
+            	int choice = prefs.getInt("menuPhone", -20);
             	final Menu menu = (Menu) param.args[0];
-            	MenuItem callMenu = menu.getItem(0);
+				final MenuItem callMenu = menu.getItem(0);
             	if(callMenu.getTitle().equals("Call")){
             		if(choice == 1){
 	            		menu.removeItem(callMenu.getItemId());
@@ -190,6 +190,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	            		callMenu.setOnMenuItemClickListener(new OnMenuItemClickListener(){
 							@Override
 							public boolean onMenuItemClick(MenuItem item) {
+								XposedBridge.log("onItemClick");
 								String telNum = jid.split("@")[0];
 								Intent intent = new Intent(Intent.ACTION_DIAL);
 								intent.setData(Uri.parse("tel:+"+telNum));
@@ -197,7 +198,17 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 								return true;
 							}
 		            	});
-	            	}
+						callMenu.getActionView().setOnClickListener(new OnClickListener() {
+							@Override
+							public void onClick(View v) {
+								XposedBridge.log("actionViewOnClick");
+								String telNum = jid.split("@")[0];
+								Intent intent = new Intent(Intent.ACTION_DIAL);
+								intent.setData(Uri.parse("tel:+"+telNum));
+								conversationLayout.getContext().startActivity(intent);
+							}
+						});
+					}
             	}
             }
         });
