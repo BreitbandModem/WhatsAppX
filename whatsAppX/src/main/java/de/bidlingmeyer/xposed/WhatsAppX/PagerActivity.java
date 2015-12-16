@@ -2,6 +2,7 @@ package de.bidlingmeyer.xposed.WhatsAppX;
 
 import java.util.ArrayList;
 
+import android.content.ComponentName;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.ActionBar;
@@ -107,13 +108,19 @@ public class PagerActivity extends FragmentActivity {
     	}
     }
     public void toContact(){
-    	if(jid.contains("@g.us"))
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.whatsapp","com.whatsapp.Conversation"));
+        intent.putExtra("jid", jid);
+        intent.setFlags(335544320);
+        startActivity(intent);
+    	/*if(jid.contains("@g.us"))
     		jid = "";
     	Uri uri = Uri.parse("smsto:"+jid);
         Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
+        intent.putExtra("test", "test2");
         intent.setPackage("com.whatsapp");
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); 
-        startActivity(intent);
+        startActivity(intent);*/
     }
     
     @Override

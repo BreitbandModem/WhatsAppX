@@ -26,7 +26,7 @@ public class LockContactService extends IntentService {
 				edit.remove("pattern."+contact);
 			}		
 			edit.commit();
-			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/locked.xml", true);
+			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/locked.xml", true, false);
 	  }
 
 }

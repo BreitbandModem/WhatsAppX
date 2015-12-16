@@ -26,7 +26,7 @@ public class HideNotificationService extends IntentService{
 		}
 		
 		edit.commit();
-		Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/hideNotification.xml", true);
+		Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/hideNotification.xml", true, false);
 	}
 
 }

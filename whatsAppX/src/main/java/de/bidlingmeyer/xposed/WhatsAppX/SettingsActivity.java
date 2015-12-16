@@ -5,15 +5,18 @@ import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.LightingColorFilter;
 import android.graphics.PorterDuff.Mode;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,6 +32,11 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Switch;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class SettingsActivity extends Activity implements OnCheckedChangeListener, OnClickListener, OnSeekBarChangeListener{
 	
@@ -67,17 +75,62 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 		
         prefs = getSharedPreferences("preferences", Context.MODE_PRIVATE);
         edit = prefs.edit();
-        if(Helper.shell("sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Select MAX(_id) FROM messages WHERE key_from_me=0';", true).trim().length() < 1){
-        	edit.putBoolean("sqlite3", false);
-        	//Toast.makeText(getBaseContext(), "sqlite3 is not installed! This app will not work!", Toast.LENGTH_LONG).show();
-        	new AlertDialog.Builder(SettingsActivity.this)
-    	    .setTitle("sqlite3 is missing or doesn't work")
-    	    .setMessage("This app will only work if sqlite3 is installed on your device!\nSearch the Play Store for 'SQLite installer'")
-    	    .setIcon(android.R.drawable.ic_dialog_alert)
-    	    .show();
-        }else{
-        	edit.putBoolean("sqlite3", true);
-        }
+		boolean firstRun = prefs.getBoolean("FirstRun", true);
+		if(firstRun){
+			//install sqlite
+			int androidVersion = android.os.Build.VERSION.SDK_INT;
+			String abi = Build.CPU_ABI.toLowerCase();
+			if(abi.contains("arm")){
+				if(androidVersion >= 21){// sqlite arm pie
+					copyFile("sqlite3.armeabi.pie");
+					edit.putBoolean("FirstRun", false).commit();
+					firstRun = false;
+				}else{// sqlite arm
+					copyFile("sqlite3.armeabi");
+					edit.putBoolean("FirstRun", false).commit();
+					firstRun = false;
+				}
+			}else if(abi.contains("x86")){
+				if(androidVersion >= 21){// sqlite x86 pie
+					copyFile("sqlite3.x86.pie");
+					edit.putBoolean("FirstRun", false).commit();
+					firstRun = false;
+				}else{// sqlite x86
+					copyFile("sqlite3.x86");
+					edit.putBoolean("FirstRun", false).commit();
+					firstRun = false;
+				}
+			}else if(abi.contains("mips")){
+				if(androidVersion >= 21){// sqlite mips pie
+					copyFile("sqlite3.mips.pie");
+					edit.putBoolean("FirstRun", false).commit();
+					firstRun = false;
+				}else{// sqlite mips
+					copyFile("sqlite3.mips");
+					edit.putBoolean("FirstRun", false).commit();
+					firstRun = false;
+				}
+			}
+		}
+		edit.putBoolean("FirstRun", false).commit();
+
+		Helper.sqlite3prefix = "data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/sqlite3";
+		if(Helper.shell("/data/data/com.whatsapp/databases/msgstore.db 'Select MAX(_id) FROM messages WHERE key_from_me=0';", true, true).trim().length() < 1){
+			Helper.sqlite3prefix = "sqlite3";
+			if(Helper.shell("/data/data/com.whatsapp/databases/msgstore.db 'Select MAX(_id) FROM messages WHERE key_from_me=0';", true, true).trim().length() < 1) {
+				edit.putBoolean("sqlite3", false);
+				//Toast.makeText(getBaseContext(), "data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/sqlite3 is not installed! This app will not work!", Toast.LENGTH_LONG).show();
+				new AlertDialog.Builder(SettingsActivity.this)
+						.setTitle("sqlite3 is missing or doesn't work")
+						.setMessage("This app will only work if sqlite3 is installed on your device!\nRefer to the XDA thread for help'")
+						.setIcon(android.R.drawable.ic_dialog_alert)
+						.show();
+			}else{
+				edit.putBoolean("sqlite3", true);
+			}
+		}else{
+			edit.putBoolean("sqlite3", true);
+		}
         
         Boolean settings [] = new Boolean[12];
         
@@ -164,7 +217,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 				edit.putInt("menuPhone", selection);
 				edit.commit();
 			}
-        });
+		});
         switch(prefMenuPhone){
         case 0 : RadioButton r1 = (RadioButton) findViewById(R.id.radioMenuPhone1);
         		 r1.setChecked(true);
@@ -403,7 +456,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
     						edit.commit();
     						deleteDatabase(DatabaseContract.DATABASE_NAME);
     						if(!reset) break;
-		case R.id.button2 : Helper.shell("find . /sdcard/WhatsApp/Media/WallPaper -maxdepth 1 -type f -name 'xposed_*' -exec rm -rfv {} +", true);
+		case R.id.button2 : Helper.shell("find . /sdcard/WhatsApp/Media/WallPaper -maxdepth 1 -type f -name 'xposed_*' -exec rm -rfv {} +", true, false);
 							if(!reset) break;
 		case R.id.button5 : SharedPreferences s2 = getSharedPreferences("notification", Context.MODE_PRIVATE);
 							SharedPreferences.Editor edit2 = s2.edit();
@@ -435,57 +488,99 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 	}
 	
 	 @Override
-	    public void onBackPressed() {
-	    	if(!cannot && fromWhatsapp){
-	    		toContact();
-	    	}else{
-	    		super.onBackPressed();
-	    	}
-	    }
-	    public void toContact(){
-	    	if(jid.contains("@g.us"))
-	    		jid = "";
-	    	Uri uri = Uri.parse("smsto:"+jid);
-	        Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
-	        intent.setPackage("com.whatsapp");
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); 
-	        startActivity(intent);
-	    }
-	    
-	    @Override
-	    protected void onResume() {
-	        super.onResume();
-	        registerReceiver(rec, intentFilter);
-	        cannot = false;
-	    }
-	    @Override
-	    protected void onPause() {
-	        super.onPause();
-	        unregisterReceiver(rec);
-	        edit.commit();
-			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/preferences.xml", true);
-	    }
-	    
-	    @Override
-	    protected void onDestroy() {
-	        super.onDestroy();
-	        edit.commit();
-			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/preferences.xml", true);
-	    }
-	    
-	    public class Receiver extends BroadcastReceiver {
-	   	 @Override
-	   	 public void onReceive(Context context, Intent intent) {
-	   		 cannot = true;
-	   	 }
-	   }
+	public void onBackPressed() {
+		if(!cannot && fromWhatsapp){
+			toContact();
+		}else{
+			super.onBackPressed();
+		}
+	}
+	public void toContact(){
+		Intent intent = new Intent();
+		intent.setComponent(new ComponentName("com.whatsapp","com.whatsapp.Conversation"));
+		intent.putExtra("jid", jid);
+		intent.setFlags(335544320);
+		startActivity(intent);
+		/*if(jid.contains("@g.us"))
+			jid = "";
+		Uri uri = Uri.parse("smsto:"+jid);
+		Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
+		intent.setPackage("com.whatsapp");
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(intent);*/
+	}
 
-		@Override
-		public void onStartTrackingTouch(SeekBar seekBar) {
+	@Override
+	protected void onResume() {
+		super.onResume();
+		registerReceiver(rec, intentFilter);
+		cannot = false;
+	}
+	@Override
+	protected void onPause() {
+		super.onPause();
+		unregisterReceiver(rec);
+		edit.commit();
+		Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/preferences.xml", true, false);
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		edit.commit();
+		Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/preferences.xml", true, false);
+	}
+
+	public class Receiver extends BroadcastReceiver {
+	 @Override
+	 public void onReceive(Context context, Intent intent) {
+		 cannot = true;
+	 }
+   }
+
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+	}
+
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar) {
+	}
+
+	private boolean copyFile(String sourceFileName)
+	{
+		AssetManager assetManager = getAssets();
+
+		File destFile = new File("/data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/sqlite3");
+
+		File destParentDir = destFile.getParentFile();
+		destParentDir.mkdir();
+
+		InputStream in = null;
+		OutputStream out = null;
+		try
+		{
+			in = assetManager.open(sourceFileName);
+			out = new FileOutputStream(destFile);
+
+			byte[] buffer = new byte[1024];
+			int read;
+			while ((read = in.read(buffer)) != -1)
+			{
+				out.write(buffer, 0, read);
+			}
+			in.close();
+			in = null;
+			out.flush();
+			out.close();
+			out = null;
+
+			return true;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
 		}
 
-		@Override
-		public void onStopTrackingTouch(SeekBar seekBar) {			
-		}
-
+		return false;
+	}
 }

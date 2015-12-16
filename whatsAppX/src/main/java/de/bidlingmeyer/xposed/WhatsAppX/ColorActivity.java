@@ -33,7 +33,7 @@ public class ColorActivity extends Activity {
 	        	SharedPreferences.Editor edit = prefs.edit();
 	        	edit.putInt(jid, color);
 	        	edit.commit();
-				Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/contactColor.xml", true);
+				Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/contactColor.xml", true, false);
 				Toast.makeText(ColorActivity.this, "Restart Whatsapp to apply change", Toast.LENGTH_SHORT).show();
 	        	finish();
 	        }
@@ -47,7 +47,7 @@ public class ColorActivity extends Activity {
 	        	SharedPreferences.Editor edit = prefs.edit();
 	        	edit.remove(jid);
 	        	edit.commit();
-				Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/contactColor.xml", true);
+				Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/contactColor.xml", true, false);
 				Toast.makeText(ColorActivity.this, "Restart Whatsapp to apply change", Toast.LENGTH_SHORT).show();
 				finish();
 	        }

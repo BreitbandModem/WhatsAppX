@@ -18,7 +18,7 @@ public class GenerateKeyService extends IntentService{
 		
 		edit.putString("myPublicKey", "testKey");
 		edit.commit();
-		Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/preferences.xml", true);
+		Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/preferences.xml", true, false);
 	}
 
 }

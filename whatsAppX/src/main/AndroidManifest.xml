@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.bidlingmeyer.xposed.WhatsAppX"
-    android:versionCode="7"
-    android:versionName="2.2.4" >
+    android:versionCode="8"
+    android:versionName="2.2.5" >
 
     <uses-sdk
         android:minSdkVersion="16"
@@ -53,11 +53,7 @@
          <service
             android:name="GenerateKeyService"
             android:exported="true" />
-         
-         <service
-            android:name="SaveKeyService"
-            android:exported="true" />
-        
+
         <activity
             android:name="WallpaperActivity"
             android:exported="true"

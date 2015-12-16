@@ -72,7 +72,7 @@ public class PinActivity extends Activity{
 				edit.putString("pattern."+contact, save);
 				edit.putLong(contact, 0);
 				edit.commit();
-				Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/locked.xml", true);
+				Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/locked.xml", true, false);
 				Toast.makeText(PinActivity.this, "lock activated", Toast.LENGTH_SHORT).show();
 				
 				finish();
@@ -92,7 +92,7 @@ public class PinActivity extends Activity{
 				SharedPreferences.Editor edit = pref.edit();
 				edit.putLong(contact, System.currentTimeMillis());
 				edit.commit();
-				Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/locked.xml", true);
+				Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/locked.xml", true, false);
 				finish();
 	            break;
 	        case RESULT_CANCELED:
@@ -125,7 +125,7 @@ public class PinActivity extends Activity{
 			 intent.addCategory("android.intent.category.LAUNCHER");
 			 startActivity(intent);
 		}else{
-			Helper.shell("am force-stop com.whatsapp", true);
+			Helper.shell("am force-stop com.whatsapp", true, false);
 			super.onBackPressed();
 		}
     }

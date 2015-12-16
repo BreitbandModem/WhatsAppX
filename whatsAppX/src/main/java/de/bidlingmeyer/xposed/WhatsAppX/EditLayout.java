@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -24,11 +25,13 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MotionEvent;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.View.OnClickListener;
@@ -47,6 +50,7 @@ import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -67,6 +71,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	ArrayList<String> previewContacts;
 	ArrayList<Integer> previewContactsIsGroup;
     private static Map<String, String> contacts = new HashMap<String, String>();
+	Activity conversationActivity;
     
 	@Override
     public void initZygote(StartupParam startupParam) throws Throwable {
@@ -81,7 +86,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
         
         final XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
 		prefs.makeWorldReadable();
-		if(!prefs.getBoolean("sqlite3", true))
+		if(!prefs.getBoolean("data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/sqlite3", true))
 			return;
 		
 		XSharedPreferences prefs2 = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "contactsJid");
@@ -92,8 +97,14 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		
         @SuppressWarnings("rawtypes")
 		final Class conversationClass = XposedHelpers.findClass("com.whatsapp.Conversation", lpparam.classLoader);
-        
-        @SuppressWarnings("rawtypes")
+
+		@SuppressWarnings("rawtypes")
+		final Class popupNotificationClass = XposedHelpers.findClass("com.whatsapp.notification.PopupNotification", lpparam.classLoader);
+
+		@SuppressWarnings("rawtypes")
+		final Class mainClass = XposedHelpers.findClass("com.whatsapp.Main", lpparam.classLoader);
+
+		@SuppressWarnings("rawtypes")
 		final Class conversationsClass = XposedHelpers.findClass("com.whatsapp.ConversationsFragment", lpparam.classLoader);
         
         @SuppressWarnings("rawtypes")
@@ -112,17 +123,14 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
             		text = ((CharSequence) param.args[0]).toString().trim();
             	else
             		return;
-            	XposedBridge.log("notification text: "+text);
             	
             	if(hideNextNotification){
-            		XposedBridge.log("parameter resetted");
             		param.args[0]=notificationText;
             		hideNextNotification = false;
             	}
             }
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-            	XposedBridge.log("parameter check: "+param.args[0]);
             	android.app.Notification.Builder builder = (Builder) param.getResult();
             	if(builder != null)
             		if(prefs.getBoolean("ticker", false))
@@ -137,28 +145,25 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
             		title = ((CharSequence) param.args[0]).toString().trim();
             	else
             		return;
-            	XposedBridge.log("notification title: "+title);
             	
             	title = title.contains("@")? title.split("@")[0].trim() : title;
-            	XposedBridge.log("message from: "+title);
             	XSharedPreferences s = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "hideNotification");
 				s.makeWorldReadable();
 				Map<String, ?> allEntries = s.getAll();
 				if(allEntries.containsKey(title)){
 					hideNextNotification = true;
-					XposedBridge.log("hideNextNotification = true");
 				}else{
 					hideNextNotification = false;
 				}
             }
         });*/
-       
         
         //Get contact jid, name
         XposedHelpers.findAndHookMethod(Intent.class, "getStringExtra", String.class, new XC_MethodHook(){
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
             	String result = (String) param.getResult();
+				XposedBridge.log("result: "+result);
             	if(result != null)
 	            	if(result.contains("@")){
 		              	jid = result;
@@ -166,7 +171,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		              	if(conversationName == null){
 		              		Intent intent = new Intent();
 		    	        	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.RefreshContactsService"));
-		    	        	if(conversationLayout != null){
+		    	        	if(conversationsLayout != null){
 		    	        		conversationsLayout.getContext().startService(intent);
 		    	        	}
 		              		conversationName = jid.split("@")[0];
@@ -177,10 +182,26 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
             }
         });
 
+		XposedHelpers.findAndHookMethod(conversationClass, "onOptionsItemSelected", MenuItem.class, new XC_MethodHook() {
+			@Override
+			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+				XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
+				if(!prefs.getBoolean("gear", true)) {
+					MenuItem item = (MenuItem) param.args[0];
+					boolean tmpBool = false;
+					loadPreviewContacts();
+					if (previewContacts != null) {
+						tmpBool = previewContacts.contains(conversationName);
+					}
+					final boolean hide = tmpBool;
+					menuClick(conversationLayout.getContext(), item, hide);
+				}
+			}
+		});
         XposedHelpers.findAndHookMethod(conversationClass, "onCreateOptionsMenu", Menu.class, new XC_MethodHook(){
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-            	int choice = prefs.getInt("menuPhone", -20);
+            	int choice = prefs.getInt("menuPhone", 0);
             	final Menu menu = (Menu) param.args[0];
 				final MenuItem callMenu = menu.getItem(0);
             	if(callMenu.getTitle().equals("Call")){
@@ -190,7 +211,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	            		callMenu.setOnMenuItemClickListener(new OnMenuItemClickListener(){
 							@Override
 							public boolean onMenuItemClick(MenuItem item) {
-								XposedBridge.log("onItemClick");
 								String telNum = jid.split("@")[0];
 								Intent intent = new Intent(Intent.ACTION_DIAL);
 								intent.setData(Uri.parse("tel:+"+telNum));
@@ -198,18 +218,25 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 								return true;
 							}
 		            	});
+
+						final String tmpJid = jid;
+						final RelativeLayout tmpLayout = conversationLayout;
 						callMenu.getActionView().setOnClickListener(new OnClickListener() {
 							@Override
 							public void onClick(View v) {
-								XposedBridge.log("actionViewOnClick");
-								String telNum = jid.split("@")[0];
+								String telNum = tmpJid.split("@")[0];
 								Intent intent = new Intent(Intent.ACTION_DIAL);
 								intent.setData(Uri.parse("tel:+"+telNum));
-								conversationLayout.getContext().startActivity(intent);
+								tmpLayout.getContext().startActivity(intent);
 							}
 						});
 					}
             	}
+				XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
+				if(!prefs.getBoolean("gear", true)) {
+					SubMenu item = menu.addSubMenu(99, 99, Menu.NONE, "WhatsappX");
+					showDialog(conversationsLayout.getContext(), item, true);
+				}
             }
         });
         
@@ -395,8 +422,44 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				super.beforeHookedMethod(param);
 				resumeCreate();
 			}
+			@Override
+			protected void afterHookedMethod(MethodHookParam param)throws Throwable{
+				conversationActivity = (Activity) param.thisObject;
+				Intent i = conversationActivity.getIntent();
+				XposedBridge.log("onCreate: "+i);
+				Bundle bundle = i.getExtras();
+				for (String key : bundle.keySet()) {
+					Object value = bundle.get(key);
+					XposedBridge.log(String.format("extras: %s %s (%s)", key, value.toString(), value.getClass().getName()));
+				}
+				XposedBridge.log("action: "+i.getAction());
+				XposedBridge.log("flags: "+i.getFlags());
+				XposedBridge.log("categories: "+i.getCategories());
+				XposedBridge.log("data: "+i.getData());
+				XposedBridge.log("component: "+i.getComponent());
+				XposedBridge.log("type: "+i.getType());
+				XposedBridge.log("clipData: "+i.getClipData());
+				XposedBridge.log("selector: "+i.getSelector());
+
+				//i.putExtra("TESTESTES", "testestse");
+				//conversationActivity.startActivity(i);
+			}
         });
-        
+
+		XposedHelpers.findAndHookMethod(popupNotificationClass, "onCreate", Bundle.class, new XC_MethodHook(){
+			@Override
+			protected void afterHookedMethod(MethodHookParam param)throws Throwable{
+				Activity popupActivity = (Activity) param.thisObject;
+				Intent i = popupActivity.getIntent();
+				XposedBridge.log("onCreatePopup: "+i);
+				Bundle bundle = i.getExtras();
+				for (String key : bundle.keySet()) {
+					Object value = bundle.get(key);
+					XposedBridge.log(String.format("extras: %s %s (%s)", key, value.toString(), value.getClass().getName()));
+				}
+			}
+		});
+
         XposedHelpers.findAndHookMethod(conversationClass, "onResume", new XC_MethodHook(){
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param)throws Throwable {
@@ -434,8 +497,26 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				fromConversations = false;
 			}
         });
-        
-        
+
+		XposedHelpers.findAndHookMethod(mainClass, "onCreate", Bundle.class, new XC_MethodHook(){
+			@Override
+			protected void beforeHookedMethod(MethodHookParam param)throws Throwable {
+				super.beforeHookedMethod(param);
+				conversationsScreen = true;
+				loadPreviewContacts();
+
+				Activity mainActivity = (Activity) param.thisObject;
+				Intent i = mainActivity.getIntent();
+				if(i.getStringExtra("WhatsAppXjid") != null){
+					Intent intent = new Intent();
+					intent.setComponent(new ComponentName("com.whatsapp", "com.whatsapp.Conversation"));
+					intent.putExtra("jid", i.getStringExtra("WhatsAppXjid"));
+					intent.setFlags(335544320);
+					mainActivity.startActivity(intent);
+					param.setResult(null);
+				}
+			}
+		});
         
         XposedHelpers.findAndHookMethod(conversationsClass, "onCreateView", LayoutInflater.class, ViewGroup.class, Bundle.class, new XC_MethodHook(){
 			@Override
@@ -468,9 +549,9 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 			protected void beforeHookedMethod(MethodHookParam param)throws Throwable {
 				super.beforeHookedMethod(param);
 				conversationsScreen = false;
-				Intent intent = new Intent();
+				/*Intent intent = new Intent();
 	        	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.RefreshContactsService"));
-	        	if(conversationsLayout != null) conversationsLayout.getContext().startService(intent);
+	        	if(conversationsLayout != null) conversationsLayout.getContext().startService(intent);*/
 			}
         });
     }
@@ -927,275 +1008,295 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
    			previewContacts.add(entry.getKey());
    		}
 	}
-	
-	public void showDialog(final Context context, View v, boolean fromGear){
+	public void addOptions(final Context context, Menu menu, boolean fromGear, boolean hide){
 		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
 		prefs.makeWorldReadable();
 		XSharedPreferences notPrefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "notification");
 		notPrefs.makeWorldReadable();
 		boolean reminderActive = notPrefs.getInt(jid, 0) > 0;
-		PopupMenu popup = new PopupMenu(context, v);
-		boolean tmpBool = false;
-    	loadPreviewContacts();
-		if(previewContacts != null){
-			tmpBool = previewContacts.contains(conversationName);
-		}
-		final boolean hide = tmpBool;
-		
+
+
 		if(conversationName.length() > 0 && !scramble && replaceText.length() == 0){
 
 			if(conversationName.length() > 0 && message.length() > 0 && layoutTime.length() > 0 && prefs.getBoolean("favorites", true) && !fromGear){
-				popup.getMenu().add(Menu.NONE, 0, 0, "Add to Favorites");
+				menu.add(Menu.NONE, 100, 0, "Add to Favorites");
 			}
 
 			if(prefs.getBoolean("click", false) || fromGear){
-				popup.getMenu().add(Menu.NONE, 9, 3, "Highlight contact");
-				
-				/*MenuItem notificationItem = popup.getMenu().add(Menu.NONE, 10, 5, "Hide notification text");
+				menu.add(Menu.NONE, 109, 3, "Highlight contact");
+
+				/*MenuItem notificationItem = menu.add(Menu.NONE, 10, 5, "Hide notification text");
 				notificationItem.setCheckable(true);
 				if(hideNotification){
-					//item = popup.getMenu().add(Menu.NONE, 10, Menu.NONE, "show notification text");
+					//item = menu.add(Menu.NONE, 10, Menu.NONE, "show notification text");
 					notificationItem.setChecked(true);
 				}else{
-					//item = popup.getMenu().add(Menu.NONE, 10, Menu.NONE, "hide notification text");
+					//item = menu.add(Menu.NONE, 10, Menu.NONE, "hide notification text");
 					notificationItem.setChecked(false);
 				}*/
-				
+
 				if(!prefs.getBoolean("reminder", true)){
-					MenuItem reminderItem = popup.getMenu().add(Menu.NONE, 6, 1, "Set Reminder");
+					MenuItem reminderItem = menu.add(Menu.NONE, 106, 1, "Set Reminder");
 					reminderItem.setCheckable(true);
 					if(reminderActive)
 						reminderItem.setChecked(true);
 					else
 						reminderItem.setChecked(false);
 				}
-				
+
 				if(!prefs.getBoolean("lock", false)){
-					MenuItem lockItem = popup.getMenu().add(Menu.NONE, 1, 4, "Lock Contact");
+					MenuItem lockItem = menu.add(Menu.NONE, 101, 4, "Lock Contact");
 					lockItem.setCheckable(true);
 					if(contactLocked){
-						//popup.getMenu().add(Menu.NONE, 1, Menu.NONE, "Unlock Contact");
+						//menu.add(Menu.NONE, 1, Menu.NONE, "Unlock Contact");
 						lockItem.setChecked(true);
 					}else{
-						//popup.getMenu().add(Menu.NONE, 1, Menu.NONE, "Lock Contact");
+						//menu.add(Menu.NONE, 1, Menu.NONE, "Lock Contact");
 						lockItem.setChecked(false);
 					}
 				}
 				if(!prefs.getBoolean("star", false)){
-					popup.getMenu().add(Menu.NONE, 8, 7, "Open WhatsAppX");
+					menu.add(Menu.NONE, 108, 7, "Open WhatsAppX");
 				}
-					if(hasWallpaper){
-						popup.getMenu().add(Menu.NONE, 2, 2, "Set/Delete Wallpaper");
-					}else{
-						popup.getMenu().add(Menu.NONE, 2, 2, "Set Wallpaper");
-					}
-				
-					MenuItem previewItem = popup.getMenu().add(Menu.NONE, 5, 6, "Hide Message Preview");
-					previewItem.setCheckable(true);
-					if(hide){
-						//popup.getMenu().add(Menu.NONE, 5, Menu.NONE, "Show Message Preview");
-						previewItem.setChecked(true);
-					}else{
-						//popup.getMenu().add(Menu.NONE, 5, Menu.NONE, "Hide Message Preview");
-						previewItem.setChecked(false);
-					}
-					
-					popup.getMenu().add(Menu.NONE, 7, 8, "Show Stats");
+				if(hasWallpaper){
+					menu.add(Menu.NONE, 102, 2, "Set/Delete Wallpaper");
+				}else{
+					menu.add(Menu.NONE, 102, 2, "Set Wallpaper");
+				}
+
+				MenuItem previewItem = menu.add(Menu.NONE, 105, 6, "Hide Message Preview");
+				previewItem.setCheckable(true);
+				if(hide){
+					//menu.add(Menu.NONE, 5, Menu.NONE, "Show Message Preview");
+					previewItem.setChecked(true);
+				}else{
+					//menu.add(Menu.NONE, 5, Menu.NONE, "Hide Message Preview");
+					previewItem.setChecked(false);
+				}
+
+				menu.add(Menu.NONE, 107, 8, "Show Stats");
 			}
 		}
 		if(prefs.getBoolean("click", false) || fromGear){
-			MenuItem scrambleItem = popup.getMenu().add(Menu.NONE, 4, 10, "Scramble Text");
+			MenuItem scrambleItem = menu.add(Menu.NONE, 104, 10, "Scramble Text");
 			scrambleItem.setCheckable(true);
 			if(scramble){
-				//popup.getMenu().add(Menu.NONE, 4, Menu.NONE, "Disable Scramble Text");
+				//menu.add(Menu.NONE, 4, Menu.NONE, "Disable Scramble Text");
 				scrambleItem.setChecked(true);
 			}else{
-				//popup.getMenu().add(Menu.NONE, 4, Menu.NONE, "Enable Scramble Text");
+				//menu.add(Menu.NONE, 4, Menu.NONE, "Enable Scramble Text");
 				scrambleItem.setChecked(false);
 			}
-			MenuItem replaceItem = popup.getMenu().add(Menu.NONE, 3, 9, "Replace Words");
+			MenuItem replaceItem = menu.add(Menu.NONE, 103, 9, "Replace Words");
 			replaceItem.setCheckable(true);
 			if(replaceText.length() > 0){
-				//popup.getMenu().add(Menu.NONE, 3, Menu.NONE, "Cancel Replace Words With");
+				//menu.add(Menu.NONE, 3, Menu.NONE, "Cancel Replace Words With");
 				replaceItem.setChecked(true);
 			}else{
-				//popup.getMenu().add(Menu.NONE, 3, Menu.NONE, "Replace Words With");
+				//menu.add(Menu.NONE, 3, Menu.NONE, "Replace Words With");
 				replaceItem.setChecked(false);
 			}
 		}
-		popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {  
-             @Override
-			public boolean onMenuItemClick(final MenuItem item) {
-            	 switch(item.getItemId()){
-            	 case 0 :
-            		 	Intent intent = new Intent();
-			        	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.SaveInfoService"));
-			        	intent.putExtra("message", message);
-			        	intent.putExtra("conversationName", conversationName);
-			        	intent.putExtra("layoutTime", layoutTime);
-			        	intent.putExtra("contact", contact);
-			        	intent.putExtra("jid", jid);
-			        	context.startService(intent);
-			        	Toast.makeText(context, "Message added to Favorites", Toast.LENGTH_SHORT).show();
-			        	return true;
-            	 case 1 :
-            		 	XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "locked");
-						prefs.makeWorldReadable();
-						long locked = prefs.getLong(conversationName, -1);
-						if(locked >= 0){//unlock contact:
-							intent = new Intent();
-				         	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.LockContactService"));
-				         	intent.putExtra("contact", conversationName);
-				         	intent.putExtra("lock", false);
-				        	context.startService(intent);
-				        	conversationLayout.setVisibility(View.VISIBLE);
-							XResForwarder x = modRes.fwd(R.drawable.ic_unlocked);
-							if(lockButton != null) lockButton.setImageDrawable(x.getResources().getDrawable(x.getId()));
-							contactLocked = false;
-							item.setChecked(false);
-						}else if(locked < 0){//lock contact:
-							intent = new Intent();
-				        	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.PinActivity"));
-				        	intent.putExtra("contact", conversationName);
-				        	intent.putExtra("set", true);
-				        	context.startActivity(intent);
-				        	item.setChecked(true);
+	}
+	public boolean menuClick(final Context context, final MenuItem item, boolean hide){
+		switch(item.getItemId()){
+			case 100 :
+				Intent intent = new Intent();
+				intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.SaveInfoService"));
+				intent.putExtra("message", message);
+				intent.putExtra("conversationName", conversationName);
+				intent.putExtra("layoutTime", layoutTime);
+				intent.putExtra("contact", contact);
+				intent.putExtra("jid", jid);
+				context.startService(intent);
+				Toast.makeText(context, "Message added to Favorites", Toast.LENGTH_SHORT).show();
+				return true;
+			case 101 :
+				XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "locked");
+				prefs.makeWorldReadable();
+				long locked = prefs.getLong(conversationName, -1);
+				if(locked >= 0){//unlock contact:
+					intent = new Intent();
+					intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.LockContactService"));
+					intent.putExtra("contact", conversationName);
+					intent.putExtra("lock", false);
+					context.startService(intent);
+					conversationLayout.setVisibility(View.VISIBLE);
+					XResForwarder x = modRes.fwd(R.drawable.ic_unlocked);
+					if(lockButton != null) lockButton.setImageDrawable(x.getResources().getDrawable(x.getId()));
+					contactLocked = false;
+					item.setChecked(false);
+				}else if(locked < 0){//lock contact:
+					intent = new Intent();
+					intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.PinActivity"));
+					intent.putExtra("contact", conversationName);
+					intent.putExtra("set", true);
+					context.startActivity(intent);
+					item.setChecked(true);
+				}
+				keepMenuOpen(item, context);
+				return false;
+			case 102 :
+				if(hasWallpaper){
+					new AlertDialog.Builder(context)
+							.setTitle("Delete or Set a new Wallpaper")
+							.setPositiveButton("Set", new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int whichButton) {
+									Intent intent = new Intent();
+									intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.WallpaperActivity"));
+									intent.putExtra("jid", jid);
+									intent.putExtra("width", width);
+									intent.putExtra("height", height);
+									context.startActivity(intent);
+								}
+							}).setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int whichButton) {
+							String pathName = Environment.getExternalStorageDirectory().toString()+"/WhatsApp/Media/WallPaper/xposed_"+conversationName+".jpg";
+							File file = new File(pathName);
+							boolean deleted = file.delete();
+							if(deleted) Toast.makeText(context, "Wallpaper successfully deleted", Toast.LENGTH_SHORT).show();
 						}
-						keepMenuOpen(item, context);
-						return false;
-            	 case 2 :
-            		 	if(hasWallpaper){
-            		 		new AlertDialog.Builder(context)
-                		    .setTitle("Delete or Set a new Wallpaper")
-                		    .setPositiveButton("Set", new DialogInterface.OnClickListener() {
-                		        public void onClick(DialogInterface dialog, int whichButton) {
-                		        	Intent intent = new Intent();
-        				        	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.WallpaperActivity"));
-        				        	intent.putExtra("jid", jid);
-        				        	intent.putExtra("width", width);
-        				        	intent.putExtra("height", height);
-        				        	context.startActivity(intent);
-                		        }
-                		    }).setNegativeButton("Delete", new DialogInterface.OnClickListener() {
-                		        public void onClick(DialogInterface dialog, int whichButton) {
-                					String pathName = Environment.getExternalStorageDirectory().toString()+"/WhatsApp/Media/WallPaper/xposed_"+conversationName+".jpg";
-                					File file = new File(pathName);
-                					boolean deleted = file.delete();
-                					if(deleted) Toast.makeText(context, "Wallpaper successfully deleted", Toast.LENGTH_SHORT).show();
-                		        }
-                		    }).show();
-            		 	}else{
-	            		 	intent = new Intent();
-				        	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.WallpaperActivity"));
-				        	intent.putExtra("jid", jid);
-				        	intent.putExtra("width", width);
-				        	intent.putExtra("height", height);
-				        	context.startActivity(intent);
-            		 	}
-            		 	return true;
-            	 case 3 :
-            		 	final EditText input = new EditText(context);
-            		 	new AlertDialog.Builder(context)
-            		    .setTitle("Set replace text")
-            		    .setView(input)
-            		    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            		        public void onClick(DialogInterface dialog, int whichButton) {
-            		            replaceText = input.getText().toString().trim(); 
-            		            item.setChecked(true);
-            		        }
-            		    }).setNegativeButton("Disable", new DialogInterface.OnClickListener() {
-            		        public void onClick(DialogInterface dialog, int whichButton) {
-            		            replaceText = "";
-            		            item.setChecked(false);
-            		        }
-            		    }).show();
-            		 	keepMenuOpen(item, context);
-            		 	return false;
-            	 case 4 :
-         		 		scramble = !scramble;
-         		 		if(scramble){
-         		 			Toast.makeText(context, "Scramble Text enabled", Toast.LENGTH_SHORT).show();
-         		 			//item.setTitle("Disable Scramble Text");
-         		 			item.setChecked(true);
-         		 		}else{
-         		 			Toast.makeText(context, "Scramble Text disabled", Toast.LENGTH_SHORT).show();
-         		 			//item.setTitle("Enable Scramble Text");
-         		 			item.setChecked(false);
-         		 		}
-         		 		keepMenuOpen(item, context);
-         		 		return false;
-            	 case 5 :
-            		 	intent = new Intent();
-			        	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.HidePreviewService"));
-			        	intent.putExtra("contact", conversationName);
-			        	intent.putExtra("isGroup", !contact.equals(conversationName));
-			        	context.startService(intent);
-			        	if(hide){
-			        		Toast.makeText(context, "Show Preview", Toast.LENGTH_SHORT).show();
-			        		item.setChecked(false);
-			        		//item.setTitle("Hide Message Preview");
-						}else{
-							Toast.makeText(context, "Hide Preview", Toast.LENGTH_SHORT).show();
-							item.setChecked(true);
-							//item.setTitle("Show Message Preview");
-						}
-			        	keepMenuOpen(item, context);
-			        	return false;
-            	 case 6 :
-            		 	intent = new Intent();
-			         	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.NotificationService"));
-			         	intent.putExtra("contact", conversationName);
-			         	intent.putExtra("jid", jid);
-			        	context.startService(intent);
-			        	item.setChecked(!item.isChecked());
-			        	keepMenuOpen(item, context);
-			        	return false;
-            	 case 7 :
-            		 	intent = new Intent();
-			         	intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.StatsActivity"));
-			         	intent.putExtra("jid", jid);
-			        	context.startActivity(intent);
-			        	return true;
-            	 case 8 :
-            		 	intent = new Intent();
-	 					intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX","de.bidlingmeyer.xposed.WhatsAppX.PagerActivity"));//startet die pager activity
-	 					intent.putExtra("conversationName", conversationName); 
-	 					intent.putExtra("whatsapp", true);
-	 					intent.putExtra("jid", jid);
-	 					int i, k;
-	 					Resources res = context.getResources();
-	 					i = res.getIdentifier("slide_out_left", "anim", "de.bidlingmeyer.xposed.WhatsAppX");
-	 					k = res.getIdentifier("slide_in_right", "anim", "de.bidlingmeyer.xposed.WhatsAppX");
-	 					ActivityOptions opts = ActivityOptions.makeCustomAnimation(context, k, i);
-	 					context.startActivity(intent, opts.toBundle());	
-	 					return true;
-            	 case 9:
-         		 		intent = new Intent();
-	 					intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX","de.bidlingmeyer.xposed.WhatsAppX.ColorActivity"));
-	 					intent.putExtra("jid", jid);
-	 					context.startActivity(intent);	
-	 					return true;
-            	 case 10 :
-         		 		intent = new Intent();
-	 					intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX","de.bidlingmeyer.xposed.WhatsAppX.HideNotificationService"));
-	 					intent.putExtra("contact", conversationName);
-	 					context.startService(intent);	
-	 					if(hideNotification){
-	 						Toast.makeText(context, "notifications will be shown", Toast.LENGTH_SHORT).show();
-	 						//item.setTitle("hide notification text");
-	 						item.setChecked(false);
-	 					}else{
-	 						Toast.makeText(context, "notifications will be hidden", Toast.LENGTH_SHORT).show();
-	 						//item.setTitle("show notification text");
-	 						item.setChecked(true);
-	 					}
-	 					hideNotification = !hideNotification;
-	 					keepMenuOpen(item, context);
-	 					return false;
-            	 }
-            	 return true;
-             }
-            });
+					}).show();
+				}else{
+					intent = new Intent();
+					intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.WallpaperActivity"));
+					intent.putExtra("jid", jid);
+					intent.putExtra("width", width);
+					intent.putExtra("height", height);
+					context.startActivity(intent);
+				}
+				return true;
+			case 103 :
+				final EditText input = new EditText(context);
+				new AlertDialog.Builder(context)
+						.setTitle("Set replace text")
+						.setView(input)
+						.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int whichButton) {
+								replaceText = input.getText().toString().trim();
+								item.setChecked(true);
+							}
+						}).setNegativeButton("Disable", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						replaceText = "";
+						item.setChecked(false);
+					}
+				}).show();
+				keepMenuOpen(item, context);
+				return false;
+			case 104 :
+				scramble = !scramble;
+				if(scramble){
+					Toast.makeText(context, "Scramble Text enabled", Toast.LENGTH_SHORT).show();
+					//item.setTitle("Disable Scramble Text");
+					item.setChecked(true);
+				}else{
+					Toast.makeText(context, "Scramble Text disabled", Toast.LENGTH_SHORT).show();
+					//item.setTitle("Enable Scramble Text");
+					item.setChecked(false);
+				}
+				keepMenuOpen(item, context);
+				return false;
+			case 105 :
+				intent = new Intent();
+				intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.HidePreviewService"));
+				intent.putExtra("contact", conversationName);
+				intent.putExtra("isGroup", !contact.equals(conversationName));
+				context.startService(intent);
+				if(hide){
+					Toast.makeText(context, "Show Preview", Toast.LENGTH_SHORT).show();
+					item.setChecked(false);
+					//item.setTitle("Hide Message Preview");
+				}else{
+					Toast.makeText(context, "Hide Preview", Toast.LENGTH_SHORT).show();
+					item.setChecked(true);
+					//item.setTitle("Show Message Preview");
+				}
+				keepMenuOpen(item, context);
+				return false;
+			case 106 :
+				intent = new Intent();
+				intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.NotificationService"));
+				intent.putExtra("contact", conversationName);
+				intent.putExtra("jid", jid);
+				context.startService(intent);
+				item.setChecked(!item.isChecked());
+				keepMenuOpen(item, context);
+				return false;
+			case 107 :
+				intent = new Intent();
+				intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.StatsActivity"));
+				intent.putExtra("jid", jid);
+				context.startActivity(intent);
+				return true;
+			case 108 :
+				intent = new Intent();
+				intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX","de.bidlingmeyer.xposed.WhatsAppX.PagerActivity"));//startet die pager activity
+				intent.putExtra("conversationName", conversationName);
+				intent.putExtra("whatsapp", true);
+				intent.putExtra("jid", jid);
+				int i, k;
+				Resources res = context.getResources();
+				i = res.getIdentifier("slide_out_left", "anim", "de.bidlingmeyer.xposed.WhatsAppX");
+				k = res.getIdentifier("slide_in_right", "anim", "de.bidlingmeyer.xposed.WhatsAppX");
+				ActivityOptions opts = ActivityOptions.makeCustomAnimation(context, k, i);
+				context.startActivity(intent, opts.toBundle());
+				return true;
+			case 109:
+				intent = new Intent();
+				intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX","de.bidlingmeyer.xposed.WhatsAppX.ColorActivity"));
+				intent.putExtra("jid", jid);
+				context.startActivity(intent);
+				return true;
+			case 1010 :
+				intent = new Intent();
+				intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX","de.bidlingmeyer.xposed.WhatsAppX.HideNotificationService"));
+				intent.putExtra("contact", conversationName);
+				context.startService(intent);
+				if(hideNotification){
+					Toast.makeText(context, "notifications will be shown", Toast.LENGTH_SHORT).show();
+					//item.setTitle("hide notification text");
+					item.setChecked(false);
+				}else{
+					Toast.makeText(context, "notifications will be hidden", Toast.LENGTH_SHORT).show();
+					//item.setTitle("show notification text");
+					item.setChecked(true);
+				}
+				hideNotification = !hideNotification;
+				keepMenuOpen(item, context);
+				return false;
+		}
+		return true;
+	}
+	public void showDialog(final Context context, Menu m, boolean fromGear){
+		boolean tmpBool = false;
+		loadPreviewContacts();
+		if(previewContacts != null){
+			tmpBool = previewContacts.contains(conversationName);
+		}
+		final boolean hide = tmpBool;
+		addOptions(context, m, fromGear, hide);
+	}
+	public void showDialog(final Context context, View v, boolean fromGear){
+		boolean tmpBool = false;
+		loadPreviewContacts();
+		if(previewContacts != null){
+			tmpBool = previewContacts.contains(conversationName);
+		}
+		final boolean hide = tmpBool;
+
+		PopupMenu popup = new PopupMenu(context, v);
+
+		addOptions(context, popup.getMenu(), fromGear, hide);
+
+		popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+			 @Override
+			 public boolean onMenuItemClick(final MenuItem item) {
+
+				 return menuClick(context, item, hide);
+			 }
+		 });
+
 		popup.show();
 	}
 	

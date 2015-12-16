@@ -49,7 +49,7 @@ public class NotificationService extends IntentService {
 				edit.putInt(jid, id);
 			}
 			edit.commit();
-			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/notification.xml", true);
+			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/notification.xml", true, false);
 		}
 	}
 	
@@ -58,7 +58,7 @@ public class NotificationService extends IntentService {
 			SharedPreferences pref2 = getSharedPreferences("contactsJid", Context.MODE_PRIVATE);
 			contact = pref2.getString(jid, "");
 		}
-		if(jid.contains("@g.us"))
+		/*if(jid.contains("@g.us"))
     		jid = "";
 		Intent resultIntent;
 		if(jid.length() > 0){
@@ -70,7 +70,12 @@ public class NotificationService extends IntentService {
 			resultIntent = new Intent("android.intent.action.MAIN");
 			resultIntent.setComponent(new ComponentName("com.whatsapp", "com.whatsapp.Main"));
 			resultIntent.addCategory("android.intent.category.LAUNCHER");
-		}
+		}*/
+		Intent resultIntent = new Intent();
+		resultIntent.setComponent(new ComponentName("com.whatsapp","com.whatsapp.Conversation"));
+		resultIntent.putExtra("jid", jid);
+		resultIntent.setFlags(335544320);
+		startActivity(resultIntent);
     	
         NotificationCompat.Builder  mBuilder = new NotificationCompat.Builder(this);
         mBuilder.setContentTitle(contact);

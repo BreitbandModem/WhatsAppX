@@ -20,6 +20,8 @@ import android.provider.BaseColumns;
 import android.widget.Toast;
 
 public class Helper {
+
+	public static String sqlite3prefix;
 	
 	public static ArrayList<String[]> getTabs(Context context){
 		DatabaseHelper dbHelper = new DatabaseHelper(context);
@@ -216,7 +218,7 @@ public class Helper {
 	}
 	
 	/*public static boolean isContactName(String string){
-		String Jid = shell("sqlite3 /data/data/com.whatsapp/databases/wa.db 'Select jid FROM wa_contacts WHERE is_whatsapp_user AND display_name=\""+string+"\"'" + "\n").trim();
+		String Jid = shell("data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/sqlite3 /data/data/com.whatsapp/databases/wa.db 'Select jid FROM wa_contacts WHERE is_whatsapp_user AND display_name=\""+string+"\"'" + "\n").trim();
 		if(Jid.length() != 0)
 			return true;
 		return false;
@@ -319,7 +321,7 @@ public class Helper {
 	}*/
 	
 	public static ArrayList<String> refreshContactList(){		
-		String str = shell("sqlite3 /data/data/com.whatsapp/databases/wa.db 'Select display_name, jid FROM wa_contacts WHERE is_whatsapp_user=1';", true).trim();
+		String str = shell("/data/data/com.whatsapp/databases/wa.db 'Select display_name, jid FROM wa_contacts WHERE is_whatsapp_user=1';", true, true).trim();
 		String[] split = str.split("\n");//"[\\x7C]"
 		ArrayList<String> list = new ArrayList<String>();
 		for(int i=0; i<split.length; i++){
@@ -330,10 +332,10 @@ public class Helper {
 	
 	public static String getStats(String jid, Context context){
 		String stats = "";
-		String str = shell("sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Select _id FROM messages WHERE key_from_me=0 AND key_remote_jid=\""+jid+"\"';", true).trim();
+		String str = shell("/data/data/com.whatsapp/databases/msgstore.db 'Select _id FROM messages WHERE key_from_me=0 AND key_remote_jid=\""+jid+"\"';", true, true).trim();
 		String [] split = str.split("\n");
 		stats = "Messages received: "+split.length;
-		str = shell("sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Select _id FROM messages WHERE key_from_me=1 AND key_remote_jid=\""+jid+"\"';", true).trim();
+		str = shell("/data/data/com.whatsapp/databases/msgstore.db 'Select _id FROM messages WHERE key_from_me=1 AND key_remote_jid=\""+jid+"\"';", true, true).trim();
 		split = str.split("\n");
 		stats += "\nMessages sent: "+split.length;
 		return stats;
@@ -394,14 +396,14 @@ public class Helper {
 }*/
 	
 	public static String getJid(Context context, String name){
-		//String Jid = shell("sqlite3 /data/data/com.whatsapp/databases/wa.db 'Select jid FROM wa_contacts WHERE is_whatsapp_user AND display_name=\""+name+"\"'" + "\n").trim();
+		//String Jid = shell("data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/sqlite3 /data/data/com.whatsapp/databases/wa.db 'Select jid FROM wa_contacts WHERE is_whatsapp_user AND display_name=\""+name+"\"'" + "\n").trim();
 		SharedPreferences pref = context.getSharedPreferences("contactsName", Context.MODE_PRIVATE);
 		String jid = pref.getString(name, "");
 		return jid;
 	}
 	
 	public static String deleteMessage(String jid, String message){
-		String result = shell("sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Delete FROM messages WHERE key_remote_jid=\""+jid+"\" AND data=\""+message+"\"';", true).trim();
+		String result = shell("/data/data/com.whatsapp/databases/msgstore.db 'Delete FROM messages WHERE key_remote_jid=\""+jid+"\" AND data=\""+message+"\"';", true, true).trim();
 		return result;
 	}
 	
@@ -421,11 +423,10 @@ public class Helper {
 		else if(!conversationName.equals(contact)){
 			SharedPreferences pref = context.getSharedPreferences("contactsName", Context.MODE_PRIVATE);
 			groupContactJid = pref.getString(contact, "");
-		}else{
+		}else {
 			conversationJid = jid;
 		}
-
-		String query = "sqlite3 /data/data/com.whatsapp/databases/msgstore.db 'Select timestamp FROM messages WHERE key_remote_jid=\""+conversationJid+"\" AND key_from_me="+key_from_me;
+		String query = "/data/data/com.whatsapp/databases/msgstore.db 'Select timestamp FROM messages WHERE key_remote_jid=\""+conversationJid+"\" AND key_from_me="+key_from_me;
 							if(groupContactJid != null){
 								query += " AND remote_resource=\""+groupContactJid+"\"";
 							}
@@ -433,7 +434,7 @@ public class Helper {
 								query += " AND instr(data, \""+str+"\") > 0";
 							}
 							query += "';";
-		String result = shell(query, true);
+		String result = shell(query, true, true);
 		String output[] = result.split("[\\x7C]");
 		long timestamp = 0;
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm"); // the format of your date
@@ -458,8 +459,10 @@ public class Helper {
 	}
 
 	
-public static String shell(String command, boolean root){
-        
+public static String shell(String command, boolean root, boolean sqlite3){
+        if(sqlite3){
+			command = sqlite3prefix+" "+command;
+		}
         Runtime runtime = Runtime.getRuntime();
         Process proc = null;
         OutputStreamWriter osw = null;

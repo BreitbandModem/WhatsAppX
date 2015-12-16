@@ -34,8 +34,13 @@ public class ChatMessage {
 		SimpleDateFormat sdfOutput = new SimpleDateFormat("dd.MMM HH:mm");
 		SimpleDateFormat sdfCompare = new SimpleDateFormat("dd.MM.yyyy");
 		SimpleDateFormat sdfToday = new SimpleDateFormat("HH:mm");
-		
-		long l = Long.parseLong(timestamp);
+
+		long l;
+		try {
+			l = Long.parseLong(timestamp);
+		}catch(Exception e){
+			return "";
+		}
 		Date d = new Date(l*1000);
 		
 		if(sdfCompare.format(System.currentTimeMillis()).equals(sdfCompare.format(d))){

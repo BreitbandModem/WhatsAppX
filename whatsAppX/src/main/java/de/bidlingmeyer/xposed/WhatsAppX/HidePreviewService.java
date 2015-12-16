@@ -26,7 +26,7 @@ public class HidePreviewService extends IntentService {
 			edit.putInt(contact, 1);
 		}
 		edit.commit();
-		Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/preview.xml", true);
+		Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/preview.xml", true, false);
 	}
 
 }

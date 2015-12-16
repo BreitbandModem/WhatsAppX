@@ -48,8 +48,8 @@ public class RefreshContactsService extends IntentService{
 			editJid.commit();
 			editName.commit();
 			//Log.d("WhatsAppXdebug", "commited");
-			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/contactsJid.xml", true);
-			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/contactName.xml", true);
+			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/contactsJid.xml", true, false);
+			Helper.shell("chmod 777 /data/data/de.bidlingmeyer.xposed.WhatsAppX/shared_prefs/contactName.xml", true, false);
 			//Log.d("WhatsAppXdebug", "over");
 			//Toast.makeText(this, "Contacts list updated", Toast.LENGTH_SHORT).show();
 	  }	
