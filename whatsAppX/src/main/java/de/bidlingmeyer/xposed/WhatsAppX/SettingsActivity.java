@@ -512,6 +512,24 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 	
 	 @Override
 	public void onBackPressed() {
+		 new AlertDialog.Builder(SettingsActivity.this)
+				 .setTitle("WhatsAppX")
+				 .setMessage("Force Close Whatsapp to apply changes?")
+				 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+					 @Override
+					 public void onClick(DialogInterface dialog, int which) {
+						 Helper.shell("am force-stop com.whatsapp", true, false);
+						 Toast.makeText(getBaseContext(), "force stopped whatsapp", Toast.LENGTH_SHORT).show();
+					 }
+				 })
+				 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+					 @Override
+					 public void onClick(DialogInterface dialog, int which) {
+						 // do nothing
+					 }
+				 })
+				 .setIcon(android.R.drawable.ic_dialog_alert)
+				 .show();
 		if(!cannot && fromWhatsapp){
 			toContact();
 		}else{
