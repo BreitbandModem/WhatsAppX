@@ -42,7 +42,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 	
 	boolean fromWhatsapp, cannot; 
 	//boolean prefFavSwitch, prefFavCheck, prefWallSwitch, prefLockSwitch, prefRemindSwitch, prefPreviewSwitch, prefManipSwitch, prefLockCheck, prefRemindCheck;
-	boolean prefGear, prefClick, prefLock, prefReminder, prefStar, prefSelfie, prefFavorites, prefPhone, prefKeyboard, prefStealth, prefGroupHighlight, prefTicker;
+	boolean prefGear, prefClick, prefLock, prefReminder, prefStar, prefSelfie, prefFavorites, prefPhone, prefKeyboard, prefStealth, prefGroupHighlight, prefTicker, prefQuickReply;
 	int prefSize, prefColor, prefMenuPhone, prefGroupHighlightColor;
 	IntentFilter intentFilter;
 	Intent starterIntent;
@@ -52,7 +52,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 	SharedPreferences prefs;
 	SharedPreferences.Editor edit;
 	SeekBar seekBar;
-	Switch switchClick, switchSelfie, switchFavorites, switchKeyboard, switchStealth, switchGroupHighlight, switchTicker;
+	Switch switchClick, switchSelfie, switchFavorites, switchKeyboard, switchStealth, switchGroupHighlight, switchTicker, switchQuickReply;
 	CheckBox switchGear, switchLock, switchReminder, switchStar, switchPhone;
 	RadioGroup radioMenuPhone;
 	ImageView imageGear, imageLock, imageReminder, imageStar, imagePhone;
@@ -111,6 +111,24 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 					firstRun = false;
 				}
 			}
+			//set default preferences
+			edit.putBoolean("gear", false);
+			edit.putBoolean("click", false);
+			edit.putBoolean("lock", false);
+			edit.putBoolean("reminder", true);
+			edit.putBoolean("star", false);
+			edit.putBoolean("selfie", false);
+			edit.putBoolean("favorites", true);
+			edit.putBoolean("phone", false);
+			edit.putBoolean("keyboard", false);
+			edit.putBoolean("stealth", false);
+			edit.putBoolean("groupHighlight", false);
+			edit.putBoolean("ticker", false);
+			edit.putBoolean("quickReply", true);
+			edit.putInt("menuPhone", 2);
+			edit.putInt("size", 25);
+			edit.putInt("color", Color.WHITE);
+			edit.putInt("groupHighlightColor", 0);
 		}
 		edit.putBoolean("FirstRun", false).commit();
 
@@ -132,7 +150,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 			edit.putBoolean("sqlite3", true);
 		}
         
-        Boolean settings [] = new Boolean[12];
+        Boolean settings [] = new Boolean[13];
         
         settings[0] = prefGear = prefs.getBoolean("gear", true);
         settings[1] = prefClick = prefs.getBoolean("click", false);
@@ -146,6 +164,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         settings[9] = prefStealth = prefs.getBoolean("stealth", false);
         settings[10] = prefGroupHighlight = prefs.getBoolean("groupHighlight", false);
         settings[11] = prefTicker = prefs.getBoolean("ticker", false);
+		settings[12] = prefQuickReply = prefs.getBoolean("quickReply", false);
         prefMenuPhone = prefs.getInt("menuPhone", 0);
         prefSize = prefs.getInt("size", 30);
         prefColor = prefs.getInt("color", Color.WHITE);
@@ -181,7 +200,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         
         gridLayout = (GridLayout) findViewById(R.id.gridLayout);
         
-        CompoundButton switches [] = new CompoundButton[12];
+        CompoundButton switches [] = new CompoundButton[13];
         
         switches[0] = switchGear = (CheckBox) findViewById(R.id.switchGear);
         switches[1] = switchClick = (Switch) findViewById(R.id.switchClick);
@@ -195,7 +214,8 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         switches[9] = switchStealth = (Switch) findViewById(R.id.switchStealth);
         switches[10] = switchGroupHighlight = (Switch) findViewById(R.id.switchGroupHighlight);
         switches[11] = switchTicker = (Switch) findViewById(R.id.switchTicker);
-        
+        switches[12] = switchQuickReply = (Switch) findViewById(R.id.switchQuickReply);
+
         
         for(int i=0; i<switches.length; i++){
         	switches[i].setChecked(settings[i]);
@@ -380,6 +400,9 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 								break;
 		case R.id.switchTicker : edit.putBoolean("ticker", isChecked);
 								prefTicker = isChecked;
+								break;
+		case R.id.switchQuickReply : edit.putBoolean("quickReply", isChecked);
+								prefQuickReply = isChecked;
 								break;
 		}
 	}

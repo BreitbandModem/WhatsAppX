@@ -58,24 +58,19 @@ public class NotificationService extends IntentService {
 			SharedPreferences pref2 = getSharedPreferences("contactsJid", Context.MODE_PRIVATE);
 			contact = pref2.getString(jid, "");
 		}
-		/*if(jid.contains("@g.us"))
-    		jid = "";
+
 		Intent resultIntent;
 		if(jid.length() > 0){
-			Uri uri = Uri.parse("smsto:"+jid);
-	        resultIntent = new Intent(Intent.ACTION_SENDTO, uri);
-	        resultIntent.setPackage("com.whatsapp");
-			resultIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); 
+			resultIntent = new Intent();
+			resultIntent.setComponent(new ComponentName("com.whatsapp","com.whatsapp.Conversation"));
+			resultIntent.putExtra("jid", jid);
+			resultIntent.setFlags(335544320);
+			startActivity(resultIntent);
 		}else{
 			resultIntent = new Intent("android.intent.action.MAIN");
 			resultIntent.setComponent(new ComponentName("com.whatsapp", "com.whatsapp.Main"));
 			resultIntent.addCategory("android.intent.category.LAUNCHER");
-		}*/
-		Intent resultIntent = new Intent();
-		resultIntent.setComponent(new ComponentName("com.whatsapp","com.whatsapp.Conversation"));
-		resultIntent.putExtra("jid", jid);
-		resultIntent.setFlags(335544320);
-		startActivity(resultIntent);
+		}
     	
         NotificationCompat.Builder  mBuilder = new NotificationCompat.Builder(this);
         mBuilder.setContentTitle(contact);

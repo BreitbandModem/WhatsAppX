@@ -130,7 +130,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:max="23" />
-        
+
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
@@ -139,7 +139,7 @@
             android:layout_marginRight="25dp"
             android:layout_marginTop="25dp"
             android:background="@android:color/darker_gray" />
-        
+
         <TextView
             android:id="@+id/textView5"
             android:layout_width="wrap_content"
@@ -172,6 +172,28 @@
 	                    android:text="Call over cell (non-whatsapp-call)"/>
 	    </RadioGroup>
         
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="25dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginRight="25dp"
+            android:layout_marginTop="25dp"
+            android:background="@android:color/darker_gray" />
+
+        <Switch
+            android:id="@+id/switchQuickReply"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Quick Reply button to notifications" />
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Requires restart of WhatsApp"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
