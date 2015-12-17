@@ -111,7 +111,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 
 		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
 		prefs.makeWorldReadable();
-		if(!prefs.getBoolean("sqlite3", true))
+		if(!prefs.getBoolean("sqlite3", false))
 			return;
 		loadPrefs(prefs);
 		
@@ -573,7 +573,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 
 		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
 		prefs.makeWorldReadable();
-		if(!prefs.getBoolean("sqlite3", true))
+		if(!prefs.getBoolean("sqlite3", false))
 			return;
 		loadPrefs(prefs);
 		
@@ -1145,12 +1145,12 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 									context.startActivity(intent);
 								}
 							}).setNegativeButton("Delete", new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int whichButton) {
-							String pathName = Environment.getExternalStorageDirectory().toString()+"/WhatsApp/Media/WallPaper/xposed_"+conversationName+".jpg";
-							File file = new File(pathName);
-							boolean deleted = file.delete();
-							if(deleted) Toast.makeText(context, "Wallpaper successfully deleted", Toast.LENGTH_SHORT).show();
-						}
+								public void onClick(DialogInterface dialog, int whichButton) {
+									String pathName = Environment.getExternalStorageDirectory().toString()+"/WhatsApp/Media/WallPaper/xposed_"+jid.split("@")[0]+".jpg";
+									File file = new File(pathName);
+									boolean deleted = file.delete();
+									if(deleted) Toast.makeText(context, "Wallpaper successfully deleted", Toast.LENGTH_SHORT).show();
+								}
 					}).show();
 				}else{
 					intent = new Intent();
