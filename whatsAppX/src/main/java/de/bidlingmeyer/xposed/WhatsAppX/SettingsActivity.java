@@ -501,13 +501,6 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 		intent.putExtra("jid", jid);
 		intent.setFlags(335544320);
 		startActivity(intent);
-		/*if(jid.contains("@g.us"))
-			jid = "";
-		Uri uri = Uri.parse("smsto:"+jid);
-		Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
-		intent.setPackage("com.whatsapp");
-		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		startActivity(intent);*/
 	}
 
 	@Override
