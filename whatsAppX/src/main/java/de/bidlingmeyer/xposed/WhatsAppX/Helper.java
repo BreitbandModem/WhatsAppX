@@ -340,7 +340,10 @@ public class Helper {
 		stats += "\nMessages sent: "+split.length;
 		return stats;
 	}
-		
+
+	public static String changeChatSettings(int setting){
+		return shell("/data/data/com.whatsapp/databases/chatsettings.db 'UPDATE settings SET message_popup = "+setting+" WHERE jid=\"individual_chat_defaults\" OR jid=\"group_chat_defaults\"';", true, true).trim();
+	}
 	/*public static Bitmap getIconBitmap(Context context, String iconName, int pixelsX, int pixelsY){
 		Bitmap bMap=null;
 	    Resources res = getRes(context);

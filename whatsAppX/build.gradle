@@ -27,6 +27,5 @@ dependencies {
     compile project(':androidcrop')
     compile 'com.haibison.android.lockpattern:app-debug:1'
     compile 'com.android.support:support-v4:19.1.0'
-    compile files('src/main/assets/libs/android-support-v4.jar')
     provided files('src/main/assets/lib/XposedBridgeApi-20150213.jar')
 }

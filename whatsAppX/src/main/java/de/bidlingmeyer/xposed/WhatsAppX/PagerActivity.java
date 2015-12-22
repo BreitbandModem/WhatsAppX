@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -101,6 +102,7 @@ public class PagerActivity extends FragmentActivity {
     
     @Override
     public void onBackPressed() {
+        Log.i("whatsapp", "backpressed: "+cannot+", "+fromWhatsapp);
     	if(!cannot && fromWhatsapp){
     		toContact();
     	}else{

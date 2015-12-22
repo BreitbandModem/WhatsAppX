@@ -45,12 +45,8 @@
          <service
             android:name="RefreshContactsService"
             android:exported="true" />
-         
-         <service
-            android:name="DeleteMsgService"
-            android:exported="true" />
-         
-         <service
+
+        <service
             android:name="GenerateKeyService"
             android:exported="true" />
 

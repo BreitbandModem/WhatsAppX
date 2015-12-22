@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.util.Log;
 
 public class NotificationService extends IntentService {
 	
@@ -23,6 +24,7 @@ public class NotificationService extends IntentService {
 	
 	@Override
 	protected void onHandleIntent(Intent intent) {
+		Log.i("whatsapp", "hey");
 		String contact = intent.getStringExtra("contact");
 		String jid = intent.getStringExtra("jid");
 		
@@ -37,6 +39,7 @@ public class NotificationService extends IntentService {
 	   			 //String cont = entry.getKey();
 	   		     //SharedPreferences pref2 = getSharedPreferences("contacts", Context.MODE_PRIVATE);
 	   			 String jid2 = entry.getKey();
+
 	   			 not(contact, jid2, getId(jid2), intent);
 	   		 }
 		}else{
@@ -65,7 +68,6 @@ public class NotificationService extends IntentService {
 			resultIntent.setComponent(new ComponentName("com.whatsapp","com.whatsapp.Conversation"));
 			resultIntent.putExtra("jid", jid);
 			resultIntent.setFlags(335544320);
-			startActivity(resultIntent);
 		}else{
 			resultIntent = new Intent("android.intent.action.MAIN");
 			resultIntent.setComponent(new ComponentName("com.whatsapp", "com.whatsapp.Main"));

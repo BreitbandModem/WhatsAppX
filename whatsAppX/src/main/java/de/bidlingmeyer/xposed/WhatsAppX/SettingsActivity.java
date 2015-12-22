@@ -39,7 +39,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class SettingsActivity extends Activity implements OnCheckedChangeListener, OnClickListener, OnSeekBarChangeListener{
-	
+
+	boolean changeApplied;
 	boolean fromWhatsapp, cannot; 
 	//boolean prefFavSwitch, prefFavCheck, prefWallSwitch, prefLockSwitch, prefRemindSwitch, prefPreviewSwitch, prefManipSwitch, prefLockCheck, prefRemindCheck;
 	boolean prefGear, prefClick, prefLock, prefReminder, prefStar, prefSelfie, prefFavorites, prefPhone, prefKeyboard, prefStealth, prefGroupHighlight, prefTicker, prefQuickReply;
@@ -72,6 +73,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         rec = new Receiver();
         this.registerReceiver(rec, intentFilter);
         cannot = false;
+		changeApplied = false;
 		
         prefs = getSharedPreferences("preferences", Context.MODE_PRIVATE);
         edit = prefs.edit();
@@ -126,7 +128,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 			edit.putBoolean("ticker", false);
 			edit.putBoolean("quickReply", true);
 			edit.putInt("menuPhone", 2);
-			edit.putInt("size", 25);
+			edit.putInt("size", 30);
 			edit.putInt("color", Color.WHITE);
 			edit.putInt("groupHighlightColor", 0);
 		}
@@ -403,6 +405,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 								break;
 		case R.id.switchQuickReply : edit.putBoolean("quickReply", isChecked);
 								prefQuickReply = isChecked;
+								//ifHelper.changeChatSettings(2);
 								break;
 		}
 	}
@@ -520,21 +523,22 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 					 public void onClick(DialogInterface dialog, int which) {
 						 Helper.shell("am force-stop com.whatsapp", true, false);
 						 Toast.makeText(getBaseContext(), "force stopped whatsapp", Toast.LENGTH_SHORT).show();
+						 if(!cannot && fromWhatsapp){
+							 toContact();
+						 }else{
+							 finish();
+						 }
 					 }
 				 })
 				 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 					 @Override
 					 public void onClick(DialogInterface dialog, int which) {
-						 // do nothing
+						 //nothing
 					 }
 				 })
 				 .setIcon(android.R.drawable.ic_dialog_alert)
 				 .show();
-		if(!cannot && fromWhatsapp){
-			toContact();
-		}else{
-			super.onBackPressed();
-		}
+		 return;
 	}
 	public void toContact(){
 		Intent intent = new Intent();
