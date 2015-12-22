@@ -43,6 +43,7 @@ import android.view.View.OnTouchListener;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -191,6 +192,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 				Intent i = new Intent();
 				i.setComponent(new ComponentName("com.whatsapp", "com.whatsapp.notification.PopupNotification"));
 				i.setFlags(268697600);
+				i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 				i.putExtra("WhatsAppX", true);
 				PendingIntent pi = PendingIntent.getActivity((Context) param.args[0], 99999, i, 0);
 				builder.addAction(0, "QUICK REPLY", pi);
@@ -198,14 +200,14 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		});
 
 		if(quickReplyPref)
-			XposedHelpers.findAndHookMethod(settingsNotificationsClass, "onCreateOptionsMenu", Menu.class, new XC_MethodHook(){
+			XposedHelpers.findAndHookMethod(settingsNotificationsClass, "onCreate", Bundle.class, new XC_MethodHook(){
 				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					Menu menu = (Menu) param.args[0];
-					/*MenuBuilder mb = (MenuBuilder) menu.getItem(0);
-					for(int i=0; i<20; i++)
-						if (mb.getItem(i)!= null)
-							XposedBridge.log("menu item: "+mb.getItem(i).getTitle());*/
+				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+					new AlertDialog.Builder((Activity) param.thisObject)
+							.setTitle("WhatsAppX")
+							.setMessage("To ensure proper functionality of the WhatsAppX QickReply feature, please don't change the Popup settings!")
+							.setIcon(android.R.drawable.ic_dialog_info)
+							.show();
 				}
 			});
         /*
@@ -294,7 +296,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
             	final Menu menu = (Menu) param.args[0];
 				final MenuItem callMenu = menu.getItem(0);
-            	if(callMenu.getTitle().equals("Call")){
+            	if(!jid.endsWith("@g.us")){
             		if(menuPhonePref == 1){
 	            		menu.removeItem(callMenu.getItemId());
 	            	}else if(menuPhonePref == 2){
@@ -323,7 +325,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 					}
             	}
 				SubMenu item = menu.addSubMenu(99, 99, Menu.NONE, "WhatsappX");
-				showDialog(conversationsLayout.getContext(), item, true);
+				showDialog(conversationLayout.getContext(), item, true);
             }
         });
         

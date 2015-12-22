@@ -405,7 +405,10 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 								break;
 		case R.id.switchQuickReply : edit.putBoolean("quickReply", isChecked);
 								prefQuickReply = isChecked;
-								//ifHelper.changeChatSettings(2);
+								if(isChecked)
+									Helper.changeChatSettings(2);
+								else
+									Helper.changeChatSettings(0);
 								break;
 		}
 	}
