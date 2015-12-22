@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.bidlingmeyer.xposed.WhatsAppX"
-    android:versionCode="8"
-    android:versionName="2.2.5" >
+    android:versionCode="9"
+    android:versionName="2.3" >
 
     <uses-sdk
         android:minSdkVersion="16"
@@ -35,7 +35,11 @@
         <service
             android:name="SaveInfoService"
             android:exported="true" />
-        
+
+        <service
+            android:name=".InstallSqliteService"
+            android:exported="true" />
+
         <activity
             android:name="StatsActivity"
             android:exported="true" 

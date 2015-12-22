@@ -13,7 +13,6 @@ import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,7 +20,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.content.res.XModuleResources;
 import android.content.res.XResForwarder;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.drawable.ColorDrawable;
@@ -29,9 +27,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,7 +38,6 @@ import android.view.View.OnTouchListener;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -57,9 +51,7 @@ import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XSharedPreferences;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LayoutInflated;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources.InitPackageResourcesParam;
@@ -78,26 +70,25 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 	ArrayList<String> previewContacts;
 	ArrayList<Integer> previewContactsIsGroup;
     private static Map<String, String> contacts = new HashMap<String, String>();
-	Activity conversationActivity, mainActivity;
 
 	boolean quickReplyPref, gearPref, selfiePref, lockPref, reminderPref, starPref, phonePref, favoritesPref, clickPref, keyboardPref;
 	int menuPhonePref, sizePref, colorPref;
 
 	public void loadPrefs(XSharedPreferences prefs){
-		quickReplyPref = prefs.getBoolean("quickReply", true);
-		gearPref = prefs.getBoolean("gear", true);
-		selfiePref = prefs.getBoolean("selfie", true);
-		lockPref = prefs.getBoolean("lock", true);
+		quickReplyPref = prefs.getBoolean("quickReply", false);
+		gearPref = prefs.getBoolean("gear", false);
+		selfiePref = prefs.getBoolean("selfie", false);
+		lockPref = prefs.getBoolean("lock", false);
 		reminderPref = prefs.getBoolean("reminder", true);
-		starPref = prefs.getBoolean("star", true);
-		phonePref = prefs.getBoolean("phone", true);
+		starPref = prefs.getBoolean("star", false);
+		phonePref = prefs.getBoolean("phone", false);
 		favoritesPref = prefs.getBoolean("favorites", true);
-		clickPref = prefs.getBoolean("click", true);
-		keyboardPref = prefs.getBoolean("keyboard", true);
+		clickPref = prefs.getBoolean("click", false);
+		keyboardPref = prefs.getBoolean("keyboard", false);
 
-		menuPhonePref = prefs.getInt("menuPhone", 0);
-		sizePref = prefs.getInt("size", 0);
-		colorPref = prefs.getInt("color", 0);
+		menuPhonePref = prefs.getInt("menuPhone", 2);
+		sizePref = prefs.getInt("size", 30);
+		colorPref = prefs.getInt("color", Color.WHITE);
 
 		notificationText = prefs.getString("notificationText", "");
 	}
@@ -115,8 +106,19 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 
 		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
 		prefs.makeWorldReadable();
-		if(!prefs.getBoolean("sqlite3", false))
-			return;
+		if(!prefs.getBoolean("sqlite3", false)){
+			@SuppressWarnings("rawtypes")
+			final Class mainClass = XposedHelpers.findClass("com.whatsapp.Main", lpparam.classLoader);
+			XposedHelpers.findAndHookMethod(mainClass, "onCreate", Bundle.class, new XC_MethodHook() {
+				@Override
+				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+					Activity mainActivity = (Activity) param.thisObject;
+					Intent intent = new Intent();
+					intent.setComponent(new ComponentName("de.bidlingmeyer.xposed.WhatsAppX", "de.bidlingmeyer.xposed.WhatsAppX.InstallSqliteService"));
+					mainActivity.startService(intent);
+				}
+			});
+		}
 		loadPrefs(prefs);
 		
 		XSharedPreferences prefs2 = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "contactsJid");
@@ -294,6 +296,7 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
         XposedHelpers.findAndHookMethod(conversationClass, "onCreateOptionsMenu", Menu.class, new XC_MethodHook(){
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+				Activity conversationActivity = (Activity) param.thisObject;
             	final Menu menu = (Menu) param.args[0];
 				final MenuItem callMenu = menu.getItem(0);
             	if(!jid.endsWith("@g.us")){
@@ -312,20 +315,20 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 		            	});
 
 						final String tmpJid = jid;
-						final RelativeLayout tmpLayout = conversationLayout;
+						final Activity tmpActivity = conversationActivity;
 						callMenu.getActionView().setOnClickListener(new OnClickListener() {
 							@Override
 							public void onClick(View v) {
 								String telNum = tmpJid.split("@")[0];
 								Intent intent = new Intent(Intent.ACTION_DIAL);
 								intent.setData(Uri.parse("tel:+"+telNum));
-								tmpLayout.getContext().startActivity(intent);
+								tmpActivity.startActivity(intent);
 							}
 						});
 					}
             	}
 				SubMenu item = menu.addSubMenu(99, 99, Menu.NONE, "WhatsappX");
-				showDialog(conversationLayout.getContext(), item, true);
+				showDialog(conversationActivity, item, true);
             }
         });
         
@@ -622,8 +625,6 @@ public class EditLayout implements IXposedHookInitPackageResources, IXposedHookZ
 
 		XSharedPreferences prefs = new XSharedPreferences("de.bidlingmeyer.xposed.WhatsAppX", "preferences");
 		prefs.makeWorldReadable();
-		if(!prefs.getBoolean("sqlite3", false))
-			return;
 		loadPrefs(prefs);
 		
 		if(selfiePref){

@@ -77,42 +77,15 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 		
         prefs = getSharedPreferences("preferences", Context.MODE_PRIVATE);
         edit = prefs.edit();
+
+		if(!prefs.getBoolean("sqlite3", false)){
+			//install sqlite
+			Intent intent = new Intent(this, InstallSqliteService.class);
+			startService(intent);
+		}
+
 		boolean firstRun = prefs.getBoolean("FirstRun", true);
 		if(firstRun){
-			//install sqlite
-			int androidVersion = android.os.Build.VERSION.SDK_INT;
-			String abi = Build.CPU_ABI.toLowerCase();
-			if(abi.contains("arm")){
-				if(androidVersion >= 21){// sqlite arm pie
-					copyFile("sqlite3.armeabi.pie");
-					edit.putBoolean("FirstRun", false).commit();
-					firstRun = false;
-				}else{// sqlite arm
-					copyFile("sqlite3.armeabi");
-					edit.putBoolean("FirstRun", false).commit();
-					firstRun = false;
-				}
-			}else if(abi.contains("x86")){
-				if(androidVersion >= 21){// sqlite x86 pie
-					copyFile("sqlite3.x86.pie");
-					edit.putBoolean("FirstRun", false).commit();
-					firstRun = false;
-				}else{// sqlite x86
-					copyFile("sqlite3.x86");
-					edit.putBoolean("FirstRun", false).commit();
-					firstRun = false;
-				}
-			}else if(abi.contains("mips")){
-				if(androidVersion >= 21){// sqlite mips pie
-					copyFile("sqlite3.mips.pie");
-					edit.putBoolean("FirstRun", false).commit();
-					firstRun = false;
-				}else{// sqlite mips
-					copyFile("sqlite3.mips");
-					edit.putBoolean("FirstRun", false).commit();
-					firstRun = false;
-				}
-			}
 			//set default preferences
 			edit.putBoolean("gear", false);
 			edit.putBoolean("click", false);
@@ -126,7 +99,7 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 			edit.putBoolean("stealth", false);
 			edit.putBoolean("groupHighlight", false);
 			edit.putBoolean("ticker", false);
-			edit.putBoolean("quickReply", true);
+			edit.putBoolean("quickReply", false);
 			edit.putInt("menuPhone", 2);
 			edit.putInt("size", 30);
 			edit.putInt("color", Color.WHITE);
@@ -134,24 +107,6 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 		}
 		edit.putBoolean("FirstRun", false).commit();
 
-		Helper.sqlite3prefix = "data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/sqlite3";
-		if(Helper.shell("/data/data/com.whatsapp/databases/msgstore.db 'Select MAX(_id) FROM messages WHERE key_from_me=0';", true, true).trim().length() < 1){
-			Helper.sqlite3prefix = "sqlite3";
-			if(Helper.shell("/data/data/com.whatsapp/databases/msgstore.db 'Select MAX(_id) FROM messages WHERE key_from_me=0';", true, true).trim().length() < 1) {
-				edit.putBoolean("sqlite3", false);
-				//Toast.makeText(getBaseContext(), "data/data/de.bidlingmeyer.xposed.WhatsAppX/sqlite/sqlite3 is not installed! This app will not work!", Toast.LENGTH_LONG).show();
-				new AlertDialog.Builder(SettingsActivity.this)
-						.setTitle("sqlite3 is missing or doesn't work")
-						.setMessage("This app will only work if sqlite3 is installed on your device!\nRefer to the XDA thread for help'")
-						.setIcon(android.R.drawable.ic_dialog_alert)
-						.show();
-			}else{
-				edit.putBoolean("sqlite3", true);
-			}
-		}else{
-			edit.putBoolean("sqlite3", true);
-		}
-        
         Boolean settings [] = new Boolean[13];
         
         settings[0] = prefGear = prefs.getBoolean("gear", true);
@@ -515,13 +470,13 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
         prefSize = progress;
         edit.putInt("size", progress+20);
 	}
-	
-	 @Override
+
+	@Override
 	public void onBackPressed() {
 		 new AlertDialog.Builder(SettingsActivity.this)
 				 .setTitle("WhatsAppX")
 				 .setMessage("Force Close Whatsapp to apply changes?")
-				 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+				 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 					 @Override
 					 public void onClick(DialogInterface dialog, int which) {
 						 Helper.shell("am force-stop com.whatsapp", true, false);
@@ -533,15 +488,15 @@ public class SettingsActivity extends Activity implements OnCheckedChangeListene
 						 }
 					 }
 				 })
-				 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+				 .setNegativeButton("No", new DialogInterface.OnClickListener() {
 					 @Override
 					 public void onClick(DialogInterface dialog, int which) {
 						 //nothing
+						 finish();
 					 }
 				 })
 				 .setIcon(android.R.drawable.ic_dialog_alert)
 				 .show();
-		 return;
 	}
 	public void toContact(){
 		Intent intent = new Intent();
