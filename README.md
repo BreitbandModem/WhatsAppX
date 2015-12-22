@@ -13,6 +13,7 @@ Features:
 5. Set Reminder
 6. Highlight contacts
 7. Call over cell instead of Whatsapp-call
+8. QuickReply option from notifications
 
 Support and further information:
 [XDA-Thread](http://forum.xda-developers.com/xposed/modules/mod-whatsappx-features-whatsapp-t2973749)
